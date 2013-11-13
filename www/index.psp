@@ -10,13 +10,12 @@ __status__ = "Production"
 
 '''This script is the user login page'''
 
-from mod_python import Session, apache
+from mod_python import Session
 from data_access_connections import data_access_factory
 from enums import ServerConfig
 import os
 import locale
 import operator
-import util 
 locale.setlocale(locale.LC_ALL, 'en_US')
 
 
