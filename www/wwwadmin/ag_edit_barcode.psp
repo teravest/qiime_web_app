@@ -13,7 +13,7 @@ if 'submit_flag' in form:
 		# Submit and redirect to fusebox
 		ag_data_access.updateAGBarcode(form['barcode'], form['ag_kit_id'], form['site_sampled'], 
 			form['environment_sampled'], form['sample_date'], form['sample_time'], 
-			form['participant_name'], form['notes'])
+			form['participant_name'], form['notes'], form['refunded'],form['withdrawn'])
 		req.write('<script>document.submit_data.submit();</script>')
 # End if
 %>
@@ -73,6 +73,8 @@ if 'barcode' in form:
 	participant_name = '' if details['participant_name'] is \
         None else details['participant_name']
 	notes = '' if details['notes'] is None else details['notes']
+	refunded = '' if details['refunded'] is None else details['refunded']
+	withdrawn = '' if details['withdrawn'] is None else details['withdrawn']
 
 	# Indent
 %>
@@ -185,6 +187,8 @@ if 'barcode' in form:
         <tr>
         <td></td><td class="warning">WARNING: Changing this value will reassign the barcode to the specified participant.<br/>Leave this alone unless you need to reassign!
         </tr>
+        <tr><td> Refunded(YorN)</td><td><input type="text" id="refunded" name="refunded" value="<%=refunded%>"/></td></tr>
+        <tr><td> Withdrawn(YorN)</td><td><input type="text" id="withdrawn" name="withdrawn" value="<%=withdrawn%>"/></td></tr>
 		<tr>
 			<td>Notes</td>
 			<td><textarea name="notes" id="notes" style="width:350px;height:100px;"><%=notes%></textarea></td>

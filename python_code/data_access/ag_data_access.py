@@ -164,7 +164,9 @@ class AGDataAccess(object):
             'sample_date': barcode_details[6],
             'sample_time': barcode_details[7],
             'participant_name': barcode_details[8],
-            'notes': barcode_details[9]
+            'notes': barcode_details[9],
+            'refunded' : barcode_details[10],
+            'withdrawn' : barcode_details[11]
         }
 
         return row_dict
@@ -241,9 +243,12 @@ class AGDataAccess(object):
         con = self.getMetadataDatabaseConnection()
         con.cursor().callproc('ag_insert_barcode', [ag_kit_id, barcode])
 
-    def updateAGBarcode(self, barcode, ag_kit_id, site_sampled, environment_sampled, sample_date, sample_time, participant_name, notes):
+    def updateAGBarcode(self, barcode, ag_kit_id, site_sampled, environment_sampled, sample_date, sample_time, participant_name, notes, refunded='N',withdrawn='N'):
         con = self.getMetadataDatabaseConnection()
-        con.cursor().callproc('ag_update_barcode', [barcode, ag_kit_id, site_sampled, environment_sampled, sample_date, sample_time, participant_name, notes])
+        con.cursor().callproc('ag_update_barcode', [barcode, ag_kit_id, site_sampled, environment_sampled, sample_date, sample_time, participant_name, notes, refunded, withdrawn])
+        if refunded == 'Y' or withdrawn == 'Y':
+            sql = "update table barcode set obsolete = 'Y' where barcode = %s" % barcode
+            con.cursor().execute(sql)
 
     def addAGHumanParticipant(self, ag_login_id, participant_name):
         con = self.getMetadataDatabaseConnection()
