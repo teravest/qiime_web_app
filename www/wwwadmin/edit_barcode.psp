@@ -33,47 +33,50 @@ if 'submit_flag' in form:
 </form>
 
 <% 
-
+barcode = ''
 if 'barcode' in form:
 	barcode = form['barcode']
 	if len(barcode) != 9:
 		req.write('Barcode does not exist')
 	else:
 		details = qiime_data_access.getBarcodeDetails(barcode)
-		if len(details) == 0:
-			req.write('Barcode does not exist')
-		else: 
-			date_created = details['create_date']
-			status = details['status']
-			sample_postmark_date = details['sample_postmark_date']
-			biomass_remaining = details['biomass_remaining']
-			obsolete = details['obsolete']
-			#Indent
-			%>
-			<form>
-			<table>
-			<tr>
-			<td>Date Created</td>
-			<td> value="<%=date_created%>"/></td>
-			</tr>
-			<tr>
-			<td>Status</td>
-			<td input type="text" name="status" id="status" value="<%=status%>"/></td>
-			</tr>
-			<tr>
-			<tdSample Postmark Date</td>
-			<td input type="text" name="sample_postmark_date" id="sample_postmark_date" value="<%=sample_postmark_date%>"/></td>
-			</tr>
-			<tr>
-			<td>Biomass Remaining (Y or N)</td>
-			<td input type="text" maxlength="1" name="biomass_remaining" id="biomass_remaining" value="<%=biomass_remaining%>"/></td>
-			</tr>
-			<tr>
-			<td>Obsolete (Y or N)</td>
-			<td input type="text" maxlength="1" name="obsolete" id="obsolete" value="<%=obsolete%>"/></td>
-			</tr>
-			</table>
-			</form>
+	if len(details) == 0:
+		req.write('Barcode does not exist')
+	else: 
+		date_created = details['create_date']
+		status = '' if details['status'] is None else details['status']
+		sample_postmark_date = '' if details['sample_postmark_date'] is None \
+			else details['sample_postmark_date']
+		biomass_remaining = '' if details['biomass_remaining'] is None \
+			else details['barcode']
+		obsolete = '' if details['obsolete'] is None else details['obsolete']
+		#Indent
+%>
+<form>
+<table>
+<tr>
+<td>Date Created</td>
+<td> <%=date_created%> </td>
+</tr>
+<tr>
+<td>Status</td>
+<td><input type="text" name="status" id="status" value="<%=status%>"/></td>
+</tr>
+<tr>
+<td>Sample Postmark Date</td>
+<td><input type="text" name="sample_postmark_date" id="sample_postmark_date" value="<%=sample_postmark_date%>"/></td>
+</tr>
+<tr>
+<td>Biomass Remaining (Y or N)</td>
+<td><input type="text" maxlength="1" name="biomass_remaining" id="biomass_remaining" value="<%=biomass_remaining%>"/></td>
+</tr>
+<tr>
+<td>Obsolete (Y or N)</td>
+<td><input type="text" maxlength="1" name="obsolete" id="obsolete" value="<%=obsolete%>"/></td>
+</tr>
+</table>
+</form>
+
 <%
-#END Indent
+#End Indent
 %>
