@@ -2999,3 +2999,23 @@ class QiimeDataAccess(object):
         projnames = [row[0] for row in result]
         return projnames
 
+    def getBarcodeDetails(self, barcode):
+        """returns a dictionary of barcode deatails
+        """
+        con = self.getMetadataDatabaseConnection()
+        results = con.cursor()
+        con.cursor().callproc('get_barcode_details',[barcode, results])
+        row = results.fetchone()
+        try:
+            barcode_details = {
+                'create_date' : row[0],
+                'status' : row[1],
+                'sample_postmark_date' : row[2],
+                'biomass_remaining' : row[3],
+                'sequencing_status' : row[4],
+                'obsolete' : row[5]
+                }
+        except TypeError :
+            #no results mean barcode doesn't exist 
+            return {}
+        return barcode_details

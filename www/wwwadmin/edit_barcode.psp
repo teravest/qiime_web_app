@@ -1,0 +1,79 @@
+<script src="../americangut/js/jquery.ui.timepicker.js"></script>
+
+<%@ include file="common_vars.psp" %>
+
+<form action="fusebox.psp" method="post" name="submit_data" id="submit_data">
+    <input type="hidden" name="page" value="select_task.psp"/>
+    <input type="hidden" name="message" value="Barcode was updated successfully."/>
+</form>
+
+<%
+qiime_data_access = data_access = data_access_factory(ServerConfig.data_access_type)
+if 'submit_flag' in form:
+	if form['submit_flag'] == '1':
+		# Submit and redirect to fusebox
+		qiime_data_access.updateBarcode(form['barcode'], form['status'], 
+			form['scan_date'], form['sample_postmark_date'], 
+			form['biomass_remaining'], form['sequencing_status'], 
+			form['obsolete'])
+		req.write('<script>document.submit_data.submit();</script>')
+# End if
+%>
+
+<form method="post" name="edit_barcode" id="edit_barcode" action="fusebox.psp?page=edit_barcode.psp">
+	<input type="hidden" name="submit_flag" id="submit_flag" value="0"/>
+	<table>
+		<tr>
+			<td>Barcode</td>
+			<td>
+				<input type="text" name="barcode" id="barcode" />
+			</td>
+		</tr>
+	</table>
+</form>
+
+<% 
+
+if 'barcode' in form:
+	barcode = form['barcode']
+	if len(barcode) != 9:
+		req.write('Barcode does not exist')
+	else:
+		details = qiime_data_access.getBarcodeDetails(barcode)
+		if len(details) == 0:
+			req.write('Barcode does not exist')
+		else: 
+			date_created = details['create_date']
+			status = details['status']
+			sample_postmark_date = details['sample_postmark_date']
+			biomass_remaining = details['biomass_remaining']
+			obsolete = details['obsolete']
+			#Indent
+			%>
+			<form>
+			<table>
+			<tr>
+			<td>Date Created</td>
+			<td> value="<%=date_created%>"/></td>
+			</tr>
+			<tr>
+			<td>Status</td>
+			<td input type="text" name="status" id="status" value="<%=status%>"/></td>
+			</tr>
+			<tr>
+			<tdSample Postmark Date</td>
+			<td input type="text" name="sample_postmark_date" id="sample_postmark_date" value="<%=sample_postmark_date%>"/></td>
+			</tr>
+			<tr>
+			<td>Biomass Remaining (Y or N)</td>
+			<td input type="text" maxlength="1" name="biomass_remaining" id="biomass_remaining" value="<%=biomass_remaining%>"/></td>
+			</tr>
+			<tr>
+			<td>Obsolete (Y or N)</td>
+			<td input type="text" maxlength="1" name="obsolete" id="obsolete" value="<%=obsolete%>"/></td>
+			</tr>
+			</table>
+			</form>
+<%
+#END Indent
+%>
