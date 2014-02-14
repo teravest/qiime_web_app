@@ -248,8 +248,12 @@ class AGDataAccess(object):
         con.cursor().callproc('ag_update_barcode', [barcode, ag_kit_id, site_sampled, environment_sampled, sample_date, sample_time, participant_name, notes, refunded, withdrawn])
         if refunded == 'Y' or withdrawn == 'Y':
             #change this to call qiime_data_access obsolete barcdoe
-            sql = "update table barcode set obsolete = 'Y' where barcode = %s" % barcode
+            sql = "update barcode set obsolete = 'Y' where barcode = %s" % barcode
             con.cursor().execute(sql)
+        else:
+            sql = "update barcode set obsolete = 'N' where barcode = %s" % barcode
+            con.cursor().execute(sql)
+        con.cursor().execute('commit')
 
     def addAGHumanParticipant(self, ag_login_id, participant_name):
         con = self.getMetadataDatabaseConnection()
