@@ -186,8 +186,8 @@ if 'barcode' in form:
         <tr>
         <td></td><td class="warning">WARNING: Changing this value will reassign the barcode to the specified participant.<br/>Leave this alone unless you need to reassign!
         </tr>
-        <tr><td> Refunded(YorN)</td><td><input type="text" maxlength="1" id="refunded" name="refunded" value="<%=refunded%>"/></td></tr>
-        <tr><td> Withdrawn(YorN)</td><td><input type="text" maxlenght="1" id="withdrawn" name="withdrawn" value="<%=withdrawn%>"/></td></tr>
+        <tr><td> Refunded(Y or N)</td><td><input type="text" maxlength="1" id="refunded" name="refunded" value="<%=refunded%>"/></td></tr>
+        <tr><td> Withdrawn(Y or N)</td><td><input type="text" maxlenght="1" id="withdrawn" name="withdrawn" value="<%=withdrawn%>"/></td></tr>
 		<tr>
 			<td>Notes</td>
 			<td><textarea name="notes" id="notes" style="width:350px;height:100px;"><%=notes%></textarea></td>
