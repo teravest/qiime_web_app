@@ -15,20 +15,21 @@ from datetime import date
 current_date = date.today().strftime("%m/%d/%Y")
 
 prev_barcode = form.get('prev_barcode', None)
-
 if prev_barcode:
     try: # try to update barcode current status.
         # do not change scan_date if it's already in the database.
         # it's gotten from the html form, so use str representation of None.
         # if form['scan_date'] == 'None': scan_date = current_date
         # else: scan_date = form['scan_date']
-
+        biomass_remaining_value = form.get('biomass_remaining', [])
+        biomass_remaining = 'N'
+        if 'biomass_remaining_checked' in biomass_remaining_value: biomass_remaining = 'Y'
         data_access.updateBarcodeStatus('Received', form['postmark_date'],
                                         form['scan_date'], prev_barcode,
-                                        form['biomass_remaining'],
+                                        biomass_remaining,
                                         form['sequencing_status'], 
                                         form['obsolete_status'])
-        data_access.setBarcodeProjType(form['project'], form['barcode'])
+        data_access.setBarcodeProjType(form['project'], prev_barcode)
     
         sent_date = form['sent_date']
 
@@ -136,13 +137,33 @@ try:
          </div>
         ''' % barcode)
     else: 
+        sample_site = '' if barcodeinfo[0] == None else barcodeinfo[0]
+        sample_date = '' if barcodeinfo[1] == None else barcodeinfo[1]
+        sample_time = '' if barcodeinfo[2] == None else barcodeinfo[2]
+        moldy = 'NA' if barcodeinfo[3] == None else barcodeinfo[3]
+        overloaded = 'NA' if barcodeinfo[4] == None else barcodeinfo[4]
+        other = 'NA' if barcodeinfo[5] == None else barcodeinfo[5]
+        other_text = '' if barcodeinfo[6] == None else barcodeinfo[6]
+        date_of_last_email = '' if barcodeinfo[7] == None else barcodeinfo[7]
+        status = '' if barcodeinfo[8] == None else barcodeinfo[8]
+        scan_date = 'NA' if barcodeinfo[9] == None else barcodeinfo[9]
+        sample_postmark_date = 'NA' if barcodeinfo[10] == None else barcodeinfo[10]
+        email = '' if barcodeinfo[11] == None else barcodeinfo[11]
+        name = '' if barcodeinfo[12] == None else barcodeinfo[12]
+        biomass_remaining = '' if barcodeinfo[13] == None else barcodeinfo[13]
+        sequencing_status = '' if barcodeinfo[14] == None else barcodeinfo[14]
+        obsolete = '' if barcodeinfo[15] == None else barcodeinfo[15]
+        biomass_check = 'checked' if biomass_remaining == 'Y' else ''
+        moldy_checked = "checked" if moldy in ('Y','y') else ""
+        overloaded_checked = "checked" if overloaded in ('Y','y') else ""
+        other_checked = "checked" if other in ('Y','y') else "",
         div_id = message = email_type = ""
 
         if (barcodeinfo[15] == "Y"):
                 #the barcode is obsolete
                 div_id = "obsolete"
                 message = "Barcode is Obsolete"
-        elif all(barcodeinfo[0:3]):
+        elif not (sample_date == sample_site == sample_time == ''):
             # it has all sample details (sample time, date, site)
             if len(barcode_metadata) == 1:
                 # and we can successfully retrieve sample metadata
@@ -164,16 +185,17 @@ try:
             div_id = "not_assigned"
             message = "Missing info"
             email_type = "0"
-
-        req.write('''
+        #indent
+%>
+        
         <div id="{div_id}" class="verification_color">
            <div class="verification_text_wrapper">
               <br />
                
                 <h2 class="verification_text">
-                 Project type: {proj_type} <br><br>
-                 Barcode: {barcode}<br><br>
-                {message}</h2>
+                 Project type: <%=proj_type%> <br><br>
+                 Barcode: <%=barcode%><br><br>
+                <%=message%></h2>
             </div>
         </div>
 
@@ -181,60 +203,39 @@ try:
         <form action="fusebox.psp?page=barcode_util.psp" method="post"
          onsubmit="return confirm('Are you sure to submit and update database?')"
          onreset="return confirm('Are you sure to reset?')">
-          <input type="hidden" name="prev_barcode" value="{barcode}" />
-          <input type="hidden" name="sent_date" value="{sent}" />
-          <input type="hidden" name="login_user"  value="{login_user}" />
-          <input type="hidden" name="login_email" value="{login_email}" />
-          <input type="hidden" name="email_type" value="{email_type}" />
-          <input type="hidden" name="sample_date" id="sample_date" value={sample_date}/>
-          <input type="hidden" name="sample_time" id="sample_time" value={sample_time}/>
-          <input type="hidden" name="sample_site" id="sample_site" value={sample_site}/>
+          <input type="hidden" name="prev_barcode" value="<%=barcode%>" />
+          <input type="hidden" name="sent_date" value="<%=date_of_last_email%>" />
+          <input type="hidden" name="login_user"  value="<%=name%>" />
+          <input type="hidden" name="login_email" value="<%=email%>" />
+          <input type="hidden" name="email_type" value="<%=email_type%>" />
+          <input type="hidden" name="sample_date" id="sample_date" value="<%=sample_date%>"/>
+          <input type="hidden" name="sample_time" id="sample_time" value="<%=sample_time%>"/>
+          <input type="hidden" name="sample_site" id="sample_site" value="<%=sample_site%>"/>
           <ul>
              <li>
              Sample details: <br/>
              <table>
-             <tr><td>Sample Date</td><td>{sample_date}</td></tr>
-             <tr><td>Sample Time</td><td>{sample_time}</td></tr>
-             <tr><td>Sample Site</td><td>{sample_site}</td></tr>
+             <tr><td>Sample Date</td><td><%=sample_date%></td></tr>
+             <tr><td>Sample Time</td><td><%=sample_time%></td></tr>
+             <tr><td>Sample Site</td><td><%=sample_site%></td></tr>
              </table>
              </li>
              <li>
                Sample issues: <br />
-                  <input class="checkbox" type="checkbox" name="sample_issue" id="moldy" value="moldy" {moldy_checked}/> 
-                    <label for="moldy"> moldy (current: {moldy}) </label> <br />
-                  <input class="checkbox" type="checkbox" name="sample_issue" id="overloaded" value="overloaded" {overloaded_checked}/>
-                    <label for="overloaded"> overloaded (current: {overloaded}) </label> <br />
-                  <input class="checkbox" type="checkbox" name="sample_issue" id="other" value="other" {other_checked}/>
-                    <label for="other"> other (current: {other}) </label> <br />
+                  <input class="checkbox" type="checkbox" name="sample_issue" id="moldy" value="moldy" <%=moldy_checked%>/> 
+                    <label for="moldy"> moldy (current: <%=moldy%>) </label> <br />
+                  <input class="checkbox" type="checkbox" name="sample_issue" id="overloaded" value="overloaded" <%=overloaded_checked%>/>
+                    <label for="overloaded"> overloaded (current: <%=overloaded%>) </label> <br />
+                  <input class="checkbox" type="checkbox" name="sample_issue" id="other" value="other" <%=other_checked%>/>
+                    <label for="other"> other (current: <%=other%>) </label> <br />
              </li>
              <li>
                Other notes: <br />
-                  <textarea name="other_text" onclick="this.select()">{other_text}</textarea>
+                  <textarea name="other_text" onclick="this.select()"><%=other_text%></textarea>
              </li>
-              '''.format(div_id = div_id,
-                   proj_type = proj_type,
-                   barcode = barcode,
-                   message = message,
-                   moldy = 'NA' if barcodeinfo[3]==None else barcodeinfo[3],
-                   moldy_checked = "checked" if barcodeinfo[3] in ('Y','y') else "",
-                   overloaded = 'NA' if barcodeinfo[4]==None else barcodeinfo[4],
-                   overloaded_checked = "checked" if barcodeinfo[4] in ('Y','y') else "",
-                   other = 'NA' if barcodeinfo[5]==None else barcodeinfo[5],
-                   other_checked = "checked" if barcodeinfo[5] in ('Y','y') else "",
-                   other_text = "" if barcodeinfo[6]==None else barcodeinfo[6],
-                   sent = barcodeinfo[7],
-                   scan_date = barcodeinfo[9],
-                   login_email = barcodeinfo[11],
-                   login_user = barcodeinfo[12],
-                   email_type = email_type,
-                   sample_date = "" if barcodeinfo[1]==None else barcodeinfo[1],
-                   sample_time = "" if barcodeinfo[2]==None else barcodeinfo[2],
-                   sample_site = "" if barcodeinfo[0]==None else barcodeinfo[0]))
-        # indent
-%>
              <li>
-               Sample postmark date (current: <%=barcodeinfo[10] if barcodeinfo[10] else 'NA'%>) : <br />
-                  <input type="text" name="postmark_date" id="postmark_date" value="<%=barcodeinfo[10] if barcodeinfo[10] else ''%>" onclick="this.select()" /> <br />
+               Sample postmark date (current: <%=sample_postmark_date%>) : <br />
+                  <input type="text" name="postmark_date" id="postmark_date" value="<%=sample_postmark_date if sample_postmark_date != 'NA' else ''%>" onclick="this.select()" /> <br />
                         <script>
                           $(function() {
                             $( "#postmark_date" ).datepicker({
@@ -249,8 +250,8 @@ try:
                   (please follow the format mm/dd/yyyy. Example: 12/25/2012)
              </li>
              <li>
-               Scan date (current: <%=barcodeinfo[9] if barcodeinfo[9] else 'NA'%>): <br />
-               <input type="text" name="scan_date" id="scan_date" value="<%=barcodeinfo[9] if barcodeinfo[9] else ''%>" onclick="this.select()" /> <br />
+               Scan date (current: <%=scan_date%>): <br />
+               <input type="text" name="scan_date" id="scan_date" value="<%=scan_date if scan_date != 'NA' else ''%>" onclick="this.select()" /> <br />
                         <script>
                           $(function() {
                             $( "#scan_date" ).datepicker({
@@ -265,14 +266,15 @@ try:
                   (please follow the format mm/dd/yyyy. Example: 12/25/2012)
              </li>
              <li>General Sample Information: <br>
-             <table>
-             <tr><td>Biomass Remaining (Y or N)</td><td><input type="text" name="biomass_remaining" id="biomass_remaining" value="<%=barcodeinfo[13] if barcodeinfo[13] else ''%>"/></td></tr>
-             <tr><td>Sequencing Status</td><td><input type="text" name="sequencing_status" id="sequencing_status" value="<%=barcodeinfo[14] if barcodeinfo[14] else ''%>"/></td></tr>
-             <tr><td>Obsolete (Y or N)</td><td><input type="text" name="obsolete_status" id="obsolete_status" value="<%=barcodeinfo[15] if barcodeinfo[15] else ''%>"/></td></tr>
+             <table
+             <tr><td><input class="checkbox" type="checkbox" name="biomass_remaining" id="biomass_remaining_checked" value="biomass_remaining_checked"<%=biomass_check%>/>
+             <label for="biomass_remaining"> Biomass Remaining (current:<%=biomass_remaining%>)</label></td></tr>
+             <tr><td>Sequencing Status</td><td><input type="text" name="sequencing_status" id="sequencing_status" value="<%=sequencing_status%>"/></td></tr>
+             <tr><td>Obsolete (Y or N)</td><td><input type="text" maxlength="1" name="obsolete_status" id="obsolete_status" value="<%=obsolete%>"/></td></tr>
              </table>
              </li>
              <li>
-             <tr><td>Project</td><td><select name="project" id="project" >
+             <tr><td>Project </td><td><select name="project" id="project" >
 <%
         project_names = data_access.getProjectNames()
         current_project = data_access.getBarcodeProjType(barcode)
@@ -286,10 +288,10 @@ try:
             </select></td></tr>
             </li>
              <li>
-               Send an email notification (previously sent: <%=barcodeinfo[7]%>): <br />
+               Send an email notification (previously sent: <%=date_of_last_email%>): <br />
                <table><tr>
                   <td> <input class="checkbox" type="checkbox" name="send_email" id="send_email" value="send_email" style="float:left;" /> </td>
-                  <td><label for="send_email" style="display:block;">send kit owner <%=barcodeinfo[12]%> (<%=barcodeinfo[11]%>) an email </label> </td></tr>
+                  <td><label for="send_email" style="display:block;">send kit owner <%=email%> (<%=name%>) an email </label> </td></tr>
 
 <%
         if email_type == '0':
@@ -327,8 +329,8 @@ try:
         elif email_type == '1':
             # indent
 %>
-            <input type="hidden" name="sample_time" value="<%=barcodeinfo[2]%>" />
-            <input type="hidden" name="sample_date" value="<%=barcodeinfo[1]%>" />
+            <input type="hidden" name="sample_time" value="<%=sample_time%>" />
+            <input type="hidden" name="sample_date" value="<%=sample_date%>" />
 <%
         # de-indent
 %>

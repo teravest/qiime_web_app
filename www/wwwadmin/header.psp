@@ -72,11 +72,6 @@ else:
             <input type="hidden" name="page_title" value="Manage Fast UniFrac limits">
         </form>
 
-        <form action="fusebox.psp" method="post" name="edit_barcode" id="edit_barcode">
-            <input type="hidden" name="page" value="edit_barcode.psp">
-            <input type="hidden" name="page_title" value="Edit Barcode">
-        </form>
-
         <!-- American Gut Utilities -->
 
         <form action="fusebox.psp" method="post" name="ag_search" id="ag_search">
@@ -165,7 +160,6 @@ else:
         <h3>General Project Utilities</h3>
         <ul class="mainmenu">
             <li><a href="" onclick="document.barcode_util.submit(); return false;">Scan Barcode</a></li>
-            <li><a href="" onclick="document.edit_barcode.submit(); return false;">Edit Barcode</a></li>
         </ul>
 
         <h3>Legacy Web App Utilities</h3>
