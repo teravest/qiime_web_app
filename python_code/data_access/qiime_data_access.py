@@ -2962,11 +2962,11 @@ class QiimeDataAccess(object):
             print 'Exception caught: %s.\nThe error is: %s' % (type(e), e)
             return False  
 
-    def updateBarcodeStatus(self, status, postmark, scan_date, barcode):
+    def updateBarcodeStatus(self, status, postmark, scan_date, barcode, biomass_remaining, sequencing_status, obsolete):
         """ Updates a barcode's status
         """
         con = self.getMetadataDatabaseConnection()
-        con.cursor().callproc('update_barcode_status', [status, postmark, scan_date, barcode])
+        con.cursor().callproc('update_barcode_status', [status, postmark, scan_date, barcode, biomass_remaining, sequencing_status, obsolete])
 
     def getBarcodeProjType(self, barcode):
         """ Get the project type of the barcode.
@@ -3010,10 +3010,11 @@ class QiimeDataAccess(object):
             barcode_details = {
                 'create_date' : row[0],
                 'status' : row[1],
-                'sample_postmark_date' : row[2],
-                'biomass_remaining' : row[3],
-                'sequencing_status' : row[4],
-                'obsolete' : row[5]
+                'scan_date' : row[2],
+                'sample_postmark_date' : row[3],
+                'biomass_remaining' : row[4],
+                'sequencing_status' : row[5],
+                'obsolete' : row[6]
                 }
         except TypeError :
             #no results mean barcode doesn't exist 

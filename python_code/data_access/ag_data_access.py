@@ -164,7 +164,9 @@ class AGDataAccess(object):
             'sample_date': barcode_details[6],
             'sample_time': barcode_details[7],
             'participant_name': barcode_details[8],
-            'notes': barcode_details[9]
+            'notes': barcode_details[9],
+            'refunded' : barcode_details[10],
+            'withdrawn' : barcode_details[11]
         }
 
         return row_dict

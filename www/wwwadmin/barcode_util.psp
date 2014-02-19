@@ -24,7 +24,10 @@ if prev_barcode:
         # else: scan_date = form['scan_date']
 
         data_access.updateBarcodeStatus('Received', form['postmark_date'],
-                                        form['scan_date'], prev_barcode)
+                                        form['scan_date'], prev_barcode,
+                                        form['biomass_remaining'],
+                                        form['sequencing_status'], 
+                                        form['obsolete_status'])
     
         sent_date = form['sent_date']
 
@@ -133,7 +136,12 @@ try:
         ''' % barcode)
     else: 
         div_id = message = email_type = ""
-        if all(barcodeinfo[0:3]):
+
+        if (barcodeinfo[15] == "Y"):
+                #the barcode is obsolete
+                div_id = "obsolete"
+                message = "Barcode is Obsolete"
+        elif all(barcodeinfo[0:3]):
             # it has all sample details (sample time, date, site)
             if len(barcode_metadata) == 1:
                 # and we can successfully retrieve sample metadata
@@ -177,7 +185,18 @@ try:
           <input type="hidden" name="login_user"  value="{login_user}" />
           <input type="hidden" name="login_email" value="{login_email}" />
           <input type="hidden" name="email_type" value="{email_type}" />
+          <input type="hidden" name="sample_date" id="sample_date" value={sample_date}/>
+          <input type="hidden" name="sample_time" id="sample_time" value={sample_time}/>
+          <input type="hidden" name="sample_site" id="sample_site" value={sample_site}/>
           <ul>
+             <li>
+             Sample details: <br/>
+             <table>
+             <tr><td>Sample Date</td><td>{sample_date}</td></tr>
+             <tr><td>Sample Time</td><td>{sample_time}</td></tr>
+             <tr><td>Sample Site</td><td>{sample_site}</td></tr>
+             </table>
+             </li>
              <li>
                Sample issues: <br />
                   <input class="checkbox" type="checkbox" name="sample_issue" id="moldy" value="moldy" {moldy_checked}/> 
@@ -191,7 +210,7 @@ try:
                Other notes: <br />
                   <textarea name="other_text" onclick="this.select()">{other_text}</textarea>
              </li>
-        '''.format(div_id = div_id,
+              '''.format(div_id = div_id,
                    proj_type = proj_type,
                    barcode = barcode,
                    message = message,
@@ -206,7 +225,10 @@ try:
                    scan_date = barcodeinfo[9],
                    login_email = barcodeinfo[11],
                    login_user = barcodeinfo[12],
-                   email_type = email_type))
+                   email_type = email_type,
+                   sample_date = "" if barcodeinfo[1]==None else barcodeinfo[1],
+                   sample_time = "" if barcodeinfo[2]==None else barcodeinfo[2],
+                   sample_site = "" if barcodeinfo[0]==None else barcodeinfo[0]))
         # indent
 %>
              <li>
@@ -240,6 +262,13 @@ try:
                           });
                         </script>
                   (please follow the format mm/dd/yyyy. Example: 12/25/2012)
+             </li>
+             <li>General Sample Information: <br>
+             <table>
+             <tr><td>Biomass Remaining (Y or N)</td><td><input type="text" name="biomass_remaining" id="biomass_remaining" value="<%=barcodeinfo[13] if barcodeinfo[13] else ''%>"/></td></tr>
+             <tr><td>Sequencing Status</td><td><input type="text" name="sequencing_status" id="sequencing_status" value="<%=barcodeinfo[14] if barcodeinfo[14] else ''%>"/></td></tr>
+             <tr><td>Obsolete (Y or N)</td><td><input type="text" name="obsolete_status" id="obsolete_status" value="<%=barcodeinfo[15] if barcodeinfo[15] else ''%>"/></td></tr>
+             </table>
              </li>
              <li>
                Send an email notification (previously sent: <%=barcodeinfo[7]%>): <br />

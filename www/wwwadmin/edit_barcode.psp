@@ -9,15 +9,94 @@
 
 <%
 qiime_data_access = data_access = data_access_factory(ServerConfig.data_access_type)
-if 'submit_flag' in form:
-	if form['submit_flag'] == '1':
-		# Submit and redirect to fusebox
-		qiime_data_access.updateBarcode(form['barcode'], form['status'], 
-			form['scan_date'], form['sample_postmark_date'], 
-			form['biomass_remaining'], form['sequencing_status'], 
-			form['obsolete'])
-		req.write('<script>document.submit_data.submit();</script>')
-# End if
+if 'sample_postmark_date' in form:
+	# Submit and redirect to fusebox
+	qiime_data_access.updateBarcodeStatus(form['status'], 
+		form['sample_postmark_date'], form['scan_date'], form['barcode'],
+		form['biomass_remaining'], form['sequencing_status'], 
+		form['obsolete'])
+	qiime_data_access.setBarcodeProjType(form['project'], form['barcode'])
+	req.write('<script>document.submit_data.submit();</script>')
+
+
+if 'barcode' in form:
+	barcode = form['barcode']
+	if len(barcode) != 9:
+		req.write('Barcode does not exist')
+	else:
+		details = qiime_data_access.getBarcodeDetails(barcode)
+		if len(details) == 0:
+			req.write('Barcode does not exist')
+		else: 
+			date_created = details['create_date']
+			status = '' if details['status'] is None else details['status']
+			scan_date = '' if details['scan_date'] is None else \
+				details['scan_date']
+			sample_postmark_date = '' if details['sample_postmark_date'] is None \
+				else details['sample_postmark_date']
+			sequencing_status = '' if details['sequencing_status'] is None\
+				else details['sequencing_status']
+			biomass_remaining = '' if details['biomass_remaining'] is None \
+				else details['biomass_remaining']
+			obsolete = '' if details['obsolete'] is None else details['obsolete']
+			#Indent
+%>
+<form action="fusebox.psp?page=edit_barcode.psp" method="post" name"edit_barcode_submit"=>
+<table>
+<tr>
+<td>Barcode</td>
+<td> <%=barcode%> </td>
+</tr>
+<tr>
+<td>Date Created</td>
+<td> <%=date_created%> </td>
+</tr>
+<tr>
+<td>Status</td>
+<td><input type="text" name="status" id="status" value="<%=status%>"/></td>
+</tr>
+<tr>
+<td> Scan Date </td>
+<td><input type="text" name="scan_date" id="scan_date" value="<%=scan_date%>"/></td>
+</tr>
+<tr>
+<td>Sample Postmark Date</td>
+<td><input type="text" name="sample_postmark_date" id="sample_postmark_date" value="<%=sample_postmark_date%>"/></td>
+</tr>
+<tr>
+<td>Sequencing Status</td>
+<td><input type="text" name="sequencing_status" id="sequencing_status" value="<%=sequencing_status%>"/></td>
+</tr>
+<tr>
+<td>Biomass Remaining (Y or N)</td>
+<td><input type="text" maxlength="1" name="biomass_remaining" id="biomass_remaining" value="<%=biomass_remaining%>"/></td>
+</tr>
+<tr>
+<td>Obsolete (Y or N)</td>
+<td><input type="text" maxlength="1" name="obsolete" id="obsolete" value="<%=obsolete%>"/></td>
+<tr><td>Project</td><td><select name="project" id="project" >
+<%
+			project_names = qiime_data_access.getProjectNames()
+			current_project = qiime_data_access.getBarcodeProjType(barcode)
+			for project in project_names:
+				if project == current_project:
+					req.write('<option value="{0}" selected>{0}</option>'.format(project))
+				else:
+					req.write('<option value="{0}">{0}</option>'.format(project))
+			#End Indent
+%>
+		</select></td></tr>
+</tr>
+<td><input type="submit" id="submit_flag" value="Submit"/></td>
+</table>
+<input type="hidden" name="barcode" id="barcode" value="<%=barcode%>"/>
+<input type="hidden" name="date_created" id="date_created" value="<%=date_created%>"/>
+</form>
+
+<%
+#End Indent
+else:
+	#indent
 %>
 
 <form method="post" name="edit_barcode" id="edit_barcode" action="fusebox.psp?page=edit_barcode.psp">
@@ -29,54 +108,12 @@ if 'submit_flag' in form:
 				<input type="text" name="barcode" id="barcode" />
 			</td>
 		</tr>
+		<tr>
+		<td></td><td> <input type="submit" value="Go" style="width:50px;"></td>
+		</tr>
 	</table>
 </form>
 
 <% 
-barcode = ''
-if 'barcode' in form:
-	barcode = form['barcode']
-	if len(barcode) != 9:
-		req.write('Barcode does not exist')
-	else:
-		details = qiime_data_access.getBarcodeDetails(barcode)
-	if len(details) == 0:
-		req.write('Barcode does not exist')
-	else: 
-		date_created = details['create_date']
-		status = '' if details['status'] is None else details['status']
-		sample_postmark_date = '' if details['sample_postmark_date'] is None \
-			else details['sample_postmark_date']
-		biomass_remaining = '' if details['biomass_remaining'] is None \
-			else details['barcode']
-		obsolete = '' if details['obsolete'] is None else details['obsolete']
-		#Indent
-%>
-<form>
-<table>
-<tr>
-<td>Date Created</td>
-<td> <%=date_created%> </td>
-</tr>
-<tr>
-<td>Status</td>
-<td><input type="text" name="status" id="status" value="<%=status%>"/></td>
-</tr>
-<tr>
-<td>Sample Postmark Date</td>
-<td><input type="text" name="sample_postmark_date" id="sample_postmark_date" value="<%=sample_postmark_date%>"/></td>
-</tr>
-<tr>
-<td>Biomass Remaining (Y or N)</td>
-<td><input type="text" maxlength="1" name="biomass_remaining" id="biomass_remaining" value="<%=biomass_remaining%>"/></td>
-</tr>
-<tr>
-<td>Obsolete (Y or N)</td>
-<td><input type="text" maxlength="1" name="obsolete" id="obsolete" value="<%=obsolete%>"/></td>
-</tr>
-</table>
-</form>
-
-<%
-#End Indent
+#end indent
 %>
