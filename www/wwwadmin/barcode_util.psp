@@ -28,6 +28,7 @@ if prev_barcode:
                                         form['biomass_remaining'],
                                         form['sequencing_status'], 
                                         form['obsolete_status'])
+        data_access.setBarcodeProjType(form['project'], form['barcode'])
     
         sent_date = form['sent_date']
 
@@ -270,6 +271,20 @@ try:
              <tr><td>Obsolete (Y or N)</td><td><input type="text" name="obsolete_status" id="obsolete_status" value="<%=barcodeinfo[15] if barcodeinfo[15] else ''%>"/></td></tr>
              </table>
              </li>
+             <li>
+             <tr><td>Project</td><td><select name="project" id="project" >
+<%
+        project_names = data_access.getProjectNames()
+        current_project = data_access.getBarcodeProjType(barcode)
+        for project in project_names:
+            if project == current_project:
+                req.write('<option value="{0}" selected>{0}</option>'.format(project))
+            else:
+                req.write('<option value="{0}">{0}</option>'.format(project))
+        #End Indent
+%>
+            </select></td></tr>
+            </li>
              <li>
                Send an email notification (previously sent: <%=barcodeinfo[7]%>): <br />
                <table><tr>

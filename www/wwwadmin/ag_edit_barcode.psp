@@ -29,14 +29,13 @@ if 'submit_flag' in form:
 </script>
 -->
 
-<form method="post" name="edit_barcode" id="edit_barcode" action="fusebox.psp?page=ag_edit_barcode.psp">
+<form method="post" name="ag_edit_barcode1" id="ag_edit_barcode1" action="fusebox.psp?page=ag_edit_barcode.psp">
 	<input type="hidden" name="submit_flag" id="submit_flag" value="0"/>
 	<table>
 		<tr>
 			<td>Barcode</td>
 			<td>
-				<!--<select name="barcode" id="barcode" class="hidden" onChange="document.edit_barcode.submit();">-->
-				<select name="barcode" id="barcode" onChange="document.edit_barcode.submit();">
+				<select name="barcode" id="barcode" onChange="document.ag_edit_barcode1.submit();">
 				<option value="">Please Select...</a>
 <%
 barcodes = ag_data_access.getAGBarcodes()
