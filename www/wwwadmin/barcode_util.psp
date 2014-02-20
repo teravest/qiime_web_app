@@ -24,7 +24,7 @@ if prev_barcode:
         biomass_remaining_value = form.get('biomass_remaining', [])
         biomass_remaining = 'N'
         if 'biomass_remaining_checked' in biomass_remaining_value: biomass_remaining = 'Y'
-        data_access.updateBarcodeStatus('Received', form['postmark_date'],
+        data_access.updateBarcodeStatus(form['bstatus'], form['postmark_date'],
                                         form['scan_date'], prev_barcode,
                                         biomass_remaining,
                                         form['sequencing_status'], 
@@ -145,7 +145,7 @@ try:
         other = 'NA' if barcodeinfo[5] == None else barcodeinfo[5]
         other_text = '' if barcodeinfo[6] == None else barcodeinfo[6]
         date_of_last_email = '' if barcodeinfo[7] == None else barcodeinfo[7]
-        status = '' if barcodeinfo[8] == None else barcodeinfo[8]
+        status = 'Received' if barcodeinfo[8] == None else barcodeinfo[8]
         scan_date = 'NA' if barcodeinfo[9] == None else barcodeinfo[9]
         sample_postmark_date = 'NA' if barcodeinfo[10] == None else barcodeinfo[10]
         email = '' if barcodeinfo[11] == None else barcodeinfo[11]
@@ -266,17 +266,29 @@ try:
                   (please follow the format mm/dd/yyyy. Example: 12/25/2012)
              </li>
              <li>General Sample Information: <br>
-             <table
+             <table>
+             <tr><td>Barcode Status</td><td><select name="bstatus" id="bstatus">
+<%
+        bar_statuses = data_access.getBarcodeStatuses()
+        for bstatus in bar_statuses:
+            if bstatus == status:
+                req.write('<option value="{0}" selected>{0}</option>'.format(bstatus))
+            else:
+                req.write('<option value="{0}">{0}</option>'.format(bstatus))
+        #END Indent
+%>
+
+             </select></td></tr>
              <tr><td><input class="checkbox" type="checkbox" name="biomass_remaining" id="biomass_remaining_checked" value="biomass_remaining_checked"<%=biomass_check%>/>
              <label for="biomass_remaining"> Biomass Remaining (current:<%=biomass_remaining%>)</label></td></tr>
              <tr><td>Sequencing Status</td><td><select name="sequencing_status" id="sequencing_status">
 <%
         seq_statuses = data_access.getSequencingStatuses()
-        for status in seq_statuses:
-            if sequencing_status == status:
-              req.write('<option value="{0}" selected>{0}</option>'.format(status))
+        for sstatus in seq_statuses:
+            if sequencing_status == sstatus:
+                req.write('<option value="{0}" selected>{0}</option>'.format(sstatus))
             else:
-                req.write('<option value="{0}">{0}</option>'.format(status))
+                req.write('<option value="{0}">{0}</option>'.format(sstatus))
         #END Indent
 %>
         </select></td></tr>
