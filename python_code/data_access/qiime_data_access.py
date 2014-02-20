@@ -3006,25 +3006,3 @@ class QiimeDataAccess(object):
         con.cursor().callproc('get_sequencing_statuses', [result])
         seq_statuses = [row[0] for row in result]
         return seq_statuses
-
-    def getBarcodeDetails(self, barcode):
-        """returns a dictionary of barcode deatails
-        """
-        con = self.getMetadataDatabaseConnection()
-        results = con.cursor()
-        con.cursor().callproc('get_barcode_details',[barcode, results])
-        row = results.fetchone()
-        try:
-            barcode_details = {
-                'create_date' : row[0],
-                'status' : row[1],
-                'scan_date' : row[2],
-                'sample_postmark_date' : row[3],
-                'biomass_remaining' : row[4],
-                'sequencing_status' : row[5],
-                'obsolete' : row[6]
-                }
-        except TypeError :
-            #no results mean barcode doesn't exist 
-            return {}
-        return barcode_details
