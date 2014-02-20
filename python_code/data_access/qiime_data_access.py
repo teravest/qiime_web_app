@@ -2998,6 +2998,14 @@ class QiimeDataAccess(object):
         con.cursor().callproc('get_project_names', [result])
         projnames = [row[0] for row in result]
         return projnames
+    def getSequencingStatuses(self):
+        """Returns a list of sequencings statuses
+        """
+        con = self.getMetadataDatabaseConnection()
+        result = con.cursor()
+        con.cursor().callproc('get_sequencing_statuses', [result])
+        seq_statuses = [row[0] for row in result]
+        return seq_statuses
 
     def getBarcodeDetails(self, barcode):
         """returns a dictionary of barcode deatails

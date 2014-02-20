@@ -152,7 +152,7 @@ try:
         name = '' if barcodeinfo[12] == None else barcodeinfo[12]
         biomass_remaining = '' if barcodeinfo[13] == None else barcodeinfo[13]
         sequencing_status = '' if barcodeinfo[14] == None else barcodeinfo[14]
-        obsolete = '' if barcodeinfo[15] == None else barcodeinfo[15]
+        obsolete = 'N' if barcodeinfo[15] == None else barcodeinfo[15]
         biomass_check = 'checked' if biomass_remaining == 'Y' else ''
         moldy_checked = "checked" if moldy in ('Y','y') else ""
         overloaded_checked = "checked" if overloaded in ('Y','y') else ""
@@ -188,7 +188,7 @@ try:
         #indent
 %>
         
-        <div id="{div_id}" class="verification_color">
+        <div id="<%=div_id%>" class="verification_color">
            <div class="verification_text_wrapper">
               <br />
                
@@ -269,8 +269,28 @@ try:
              <table
              <tr><td><input class="checkbox" type="checkbox" name="biomass_remaining" id="biomass_remaining_checked" value="biomass_remaining_checked"<%=biomass_check%>/>
              <label for="biomass_remaining"> Biomass Remaining (current:<%=biomass_remaining%>)</label></td></tr>
-             <tr><td>Sequencing Status</td><td><input type="text" name="sequencing_status" id="sequencing_status" value="<%=sequencing_status%>"/></td></tr>
-             <tr><td>Obsolete (Y or N)</td><td><input type="text" maxlength="1" name="obsolete_status" id="obsolete_status" value="<%=obsolete%>"/></td></tr>
+             <tr><td>Sequencing Status</td><td><select name="sequencing_status" id="sequencing_status">
+<%
+        seq_statuses = data_access.getSequencingStatuses()
+        for status in seq_statuses:
+            if sequencing_status == status:
+              req.write('<option value="{0}" selected>{0}</option>'.format(status))
+            else:
+                req.write('<option value="{0}">{0}</option>'.format(status))
+        #END Indent
+%>
+        </select></td></tr>
+             <tr><td>Obsolete</td><td><select name="obsolete_status" id="obsolete_status">
+<%
+        if obsolete == 'N':
+          req.write('<option value="{0}" selected>{0}</option>'.format(obsolete))
+          req.write('<option value="Y">Y</option>')
+        else:
+          req.write('<option value="N">N</option>')
+          req.write('<option value="{0}" selected>{0}</option>'.format(obsolete))
+        #END Indent
+%>
+             </select></td></tr>
              </table>
              </li>
              <li>
@@ -291,7 +311,7 @@ try:
                Send an email notification (previously sent: <%=date_of_last_email%>): <br />
                <table><tr>
                   <td> <input class="checkbox" type="checkbox" name="send_email" id="send_email" value="send_email" style="float:left;" /> </td>
-                  <td><label for="send_email" style="display:block;">send kit owner <%=email%> (<%=name%>) an email </label> </td></tr>
+                  <td><label for="send_email" style="display:block;">send kit owner <%=name%> (<%=email%>) an email </label> </td></tr>
 
 <%
         if email_type == '0':
