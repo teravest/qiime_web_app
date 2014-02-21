@@ -16,7 +16,7 @@ current_date = date.today().strftime("%m/%d/%Y")
 
 prev_barcode = form.get('prev_barcode', None)
 if prev_barcode:
-    try: # try to update barcode current status.
+        # try to update barcode current status.
         # do not change scan_date if it's already in the database.
         # it's gotten from the html form, so use str representation of None.
         # if form['scan_date'] == 'None': scan_date = current_date
@@ -26,7 +26,7 @@ if prev_barcode:
         if 'biomass_remaining_checked' in biomass_remaining_value: biomass_remaining = 'Y'
         data_access.updateBarcodeStatus(form['bstatus'], form['postmark_date'],
                                         form['scan_date'], prev_barcode,
-                                        biomass_remaining,
+                                        form['biomass_remaining'],
                                         form['sequencing_status'], 
                                         form['obsolete_status'])
         data_access.setBarcodeProjType(form['project'], prev_barcode)
@@ -105,8 +105,8 @@ Thank you for your participation!
         ag_data_access.updateAKB(prev_barcode, moldy, overloaded, other,
                                  form['other_text'], sent_date)
         req.write("Barcode %s was sucessfully updated<br/>" % prev_barcode)
-    except:
-        req.write("Barcode %s update failed!!!<br/>" % prev_barcode)
+    # except:
+    #     req.write("Barcode %s update failed!!!<br/>" % prev_barcode)
 # de-indent
 %>
 
@@ -150,7 +150,7 @@ try:
         sample_postmark_date = 'NA' if barcodeinfo[10] == None else barcodeinfo[10]
         email = '' if barcodeinfo[11] == None else barcodeinfo[11]
         name = '' if barcodeinfo[12] == None else barcodeinfo[12]
-        biomass_remaining = '' if barcodeinfo[13] == None else barcodeinfo[13]
+        biomass_remaining = 'Unknown' if barcodeinfo[13] == None else barcodeinfo[13]
         sequencing_status = '' if barcodeinfo[14] == None else barcodeinfo[14]
         obsolete = 'N' if barcodeinfo[15] == None else barcodeinfo[15]
         biomass_check = 'checked' if biomass_remaining == 'Y' else ''
@@ -200,6 +200,7 @@ try:
         </div>
 
         <div id="barcode_form">
+
         <form action="fusebox.psp?page=barcode_util.psp" method="post"
          onsubmit="return confirm('Are you sure to submit and update database?')"
          onreset="return confirm('Are you sure to reset?')">
@@ -212,28 +213,9 @@ try:
           <input type="hidden" name="sample_time" id="sample_time" value="<%=sample_time%>"/>
           <input type="hidden" name="sample_site" id="sample_site" value="<%=sample_site%>"/>
           <ul>
-             <li>
-             Sample details: <br/>
-             <table>
-             <tr><td>Sample Date</td><td><%=sample_date%></td></tr>
-             <tr><td>Sample Time</td><td><%=sample_time%></td></tr>
-             <tr><td>Sample Site</td><td><%=sample_site%></td></tr>
-             </table>
-             </li>
-             <li>
-               Sample issues: <br />
-                  <input class="checkbox" type="checkbox" name="sample_issue" id="moldy" value="moldy" <%=moldy_checked%>/> 
-                    <label for="moldy"> moldy (current: <%=moldy%>) </label> <br />
-                  <input class="checkbox" type="checkbox" name="sample_issue" id="overloaded" value="overloaded" <%=overloaded_checked%>/>
-                    <label for="overloaded"> overloaded (current: <%=overloaded%>) </label> <br />
-                  <input class="checkbox" type="checkbox" name="sample_issue" id="other" value="other" <%=other_checked%>/>
-                    <label for="other"> other (current: <%=other%>) </label> <br />
-             </li>
-             <li>
-               Other notes: <br />
-                  <textarea name="other_text" onclick="this.select()"><%=other_text%></textarea>
-             </li>
-             <li>
+          <table cellspacing="40"><tr><td>
+          <h2> General Barcode Details </h2>
+            <li>
                Sample postmark date (current: <%=sample_postmark_date%>) : <br />
                   <input type="text" name="postmark_date" id="postmark_date" value="<%=sample_postmark_date if sample_postmark_date != 'NA' else ''%>" onclick="this.select()" /> <br />
                         <script>
@@ -265,9 +247,8 @@ try:
                         </script>
                   (please follow the format mm/dd/yyyy. Example: 12/25/2012)
              </li>
-             <li>General Sample Information: <br>
-             <table>
-             <tr><td>Barcode Status</td><td><select name="bstatus" id="bstatus">
+             <li>
+             Barcode Status:<br /><select name="bstatus" id="bstatus">
 <%
         bar_statuses = data_access.getBarcodeStatuses()
         for bstatus in bar_statuses:
@@ -278,10 +259,23 @@ try:
         #END Indent
 %>
 
-             </select></td></tr>
-             <tr><td><input class="checkbox" type="checkbox" name="biomass_remaining" id="biomass_remaining_checked" value="biomass_remaining_checked"<%=biomass_check%>/>
-             <label for="biomass_remaining"> Biomass Remaining (current:<%=biomass_remaining%>)</label></td></tr>
-             <tr><td>Sequencing Status</td><td><select name="sequencing_status" id="sequencing_status">
+             </select></li>
+             <li>Biomass Remaining: <br /><select name="biomass_remaining" id="biomass_remaining">
+<%
+        for bmass in ['N', 'Y', 'Unknown']:
+            selected = ''
+            if biomass_remaining == bmass:
+                selected = 'selected'
+            if bmass == 'Y':
+                req.write("<option value='Y' {0}>Yes</option>".format(selected))
+            elif bmass == 'N':
+                req.write("<option value='N' {0}>No</option>".format(selected))
+            elif bmass == 'Unknown':
+                req.write("<option value='' {0}>Unknown</option>".format(selected))
+        #END Indent
+%>
+             </select></li>
+             <li>Sequencing Status<br /><select name="sequencing_status" id="sequencing_status">
 <%
         seq_statuses = data_access.getSequencingStatuses()
         for sstatus in seq_statuses:
@@ -291,34 +285,54 @@ try:
                 req.write('<option value="{0}">{0}</option>'.format(sstatus))
         #END Indent
 %>
-        </select></td></tr>
-             <tr><td>Obsolete</td><td><select name="obsolete_status" id="obsolete_status">
+        </select></li>
+             <li>Obsolete<br /><select name="obsolete_status" id="obsolete_status">
 <%
         if obsolete == 'N':
-          req.write('<option value="{0}" selected>{0}</option>'.format(obsolete))
-          req.write('<option value="Y">Y</option>')
+          req.write('<option value="N" selected>No</option>')
+          req.write('<option value="Y">Yes</option>')
         else:
-          req.write('<option value="N">N</option>')
-          req.write('<option value="{0}" selected>{0}</option>'.format(obsolete))
+          req.write('<option value="N">No</option>')
+          req.write('<option value="Y" selected>Yes</option>')
         #END Indent
 %>
-             </select></td></tr>
-             </table>
-             </li>
+             </select></li>
              <li>
-             <tr><td>Project </td><td><select name="project" id="project" >
+             Project <br /><select name="project" id="project" >
 <%
         project_names = data_access.getProjectNames()
-        current_project = data_access.getBarcodeProjType(barcode)
         for project in project_names:
-            if project == current_project:
+            if project == proj_type:
                 req.write('<option value="{0}" selected>{0}</option>'.format(project))
             else:
                 req.write('<option value="{0}">{0}</option>'.format(project))
         #End Indent
 %>
-            </select></td></tr>
-            </li>
+            </select>
+            </li></td><td>
+            <h2><%=proj_type%> details</h2>
+             <li>
+             Sample details: <br/>
+             <table>
+             <tr><td>Sample Date</td><td><%=sample_date%></td></tr>
+             <tr><td>Sample Time</td><td><%=sample_time%></td></tr>
+             <tr><td>Sample Site</td><td><%=sample_site%></td></tr>
+             </table>
+             </li>
+             <li>
+               Sample issues: <br />
+                  <input class="checkbox" type="checkbox" name="sample_issue" id="moldy" value="moldy" <%=moldy_checked%>/> 
+                    <label for="moldy"> moldy (current: <%=moldy%>) </label> <br />
+                  <input class="checkbox" type="checkbox" name="sample_issue" id="overloaded" value="overloaded" <%=overloaded_checked%>/>
+                    <label for="overloaded"> overloaded (current: <%=overloaded%>) </label> <br />
+                  <input class="checkbox" type="checkbox" name="sample_issue" id="other" value="other" <%=other_checked%>/>
+                    <label for="other"> other (current: <%=other%>) </label> <br />
+             </li>
+             <li>
+               Other notes: <br />
+                  <textarea name="other_text" onclick="this.select()"><%=other_text%></textarea>
+             </li>
+            
              <li>
                Send an email notification (previously sent: <%=date_of_last_email%>): <br />
                <table><tr>
@@ -368,7 +382,11 @@ try:
 %>
             </table>
            </li>
+           <li>
+        <a href="fusebox.psp?page=ag_edit_barcode.psp&barcode=<%=barcode%>">Edit American Gut Barcode</a>
+           </li>
           </ul>
+          </tr></td></table><br /><br />
               <input type="submit" value="Submit">
               <input type="reset" value="Reset!">
         </form>
