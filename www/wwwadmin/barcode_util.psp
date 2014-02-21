@@ -2,7 +2,8 @@
 <%
 __author__ = "Doug Wendel"
 __copyright__ = "Copyright 2009-2013, Qiime Web Analysis"
-__credits__ = ["Doug Wendel", "Zhenjiang Xu", "Adam Robbins-Pianka"]
+__credits__ = ["Doug Wendel", "Zhenjiang Xu", "Adam Robbins-Pianka",
+               "Emily TerAvest"]
 __license__ = "GPL"
 __version__ = "1.0.0.dev"
 __email__ = "zhenjiang.xu@colorado.edu"
@@ -11,102 +12,117 @@ __status__ = "Production"
 from utils.mail import send_email
 from datetime import date
 
-# scan_date = date.today().isoformat()
+
 current_date = date.today().strftime("%m/%d/%Y")
 
 prev_barcode = form.get('prev_barcode', None)
 if prev_barcode:
-        # try to update barcode current status.
-        # do not change scan_date if it's already in the database.
-        # it's gotten from the html form, so use str representation of None.
-        # if form['scan_date'] == 'None': scan_date = current_date
-        # else: scan_date = form['scan_date']
+        # try to update general barcode information.
         biomass_remaining_value = form.get('biomass_remaining', [])
         biomass_remaining = 'N'
         if 'biomass_remaining_checked' in biomass_remaining_value: biomass_remaining = 'Y'
-        data_access.updateBarcodeStatus(form['bstatus'], form['postmark_date'],
-                                        form['scan_date'], prev_barcode,
-                                        form['biomass_remaining'],
-                                        form['sequencing_status'], 
-                                        form['obsolete_status'])
-        data_access.setBarcodeProjType(form['project'], prev_barcode)
+        try:
+            data_access.updateBarcodeStatus(form['bstatus'], form['postmark_date'],
+                                            form['scan_date'], prev_barcode,
+                                            form['biomass_remaining'],
+                                            form['sequencing_status'], 
+                                            form['obsolete_status'])
+            data_access.setBarcodeProjType(form['project'], prev_barcode)
+            req.write("General Barcode Information Updated<br>")
+        except:
+            req.write("Failed to updated General Barcode Information<br>")
     
-        sent_date = form['sent_date']
+        if form['proj_group'] in 'American Gut':
+            #if we are also updated the american gut form
+            sent_date = form['sent_date']
 
-        general_name = "American Gut participant"
+            general_name = "American Gut participant"
 
-        login_user = form['login_user'] # kit owner name
-        if login_user=="None": login_user = general_name
+            login_user = form['login_user'] # kit owner name
+            if login_user=="None": login_user = general_name
 
-        if "send_email" in form:
-            email_type = form['email_type']
-            subject = body_message = ""
-            sample_time = form['sample_time']
-            sample_date = form['sample_date']
-            if email_type == '0':
-                subject='Follow up on Your American Gut Sample with Barcode %s' % prev_barcode
-                body_message='''
-Dear {name},
+            if "send_email" in form:
+                email_type = form['email_type']
+                subject = body_message = ""
+                sample_time = form['sample_time']
+                sample_date = form['sample_date']
+                if email_type == '0':
+                    subject='Follow up on Your American Gut Sample with Barcode %s' % prev_barcode
+                    body_message='''
+    Dear {name},
 
-We have recently received your sample barcode: {barcode}, but we cannot process your sample until the online forms have been completed.  Information about your sample is tracked through the American Gut participant website, and you are required to log in and complete the online process in order for your sample to be processed. 
+    We have recently received your sample barcode: {barcode}, but we cannot process your sample until the online forms have been completed.  
+    Information about your sample is tracked through the American Gut participant website, and you are required to log in and complete the online 
+    process in order for your sample to be processed. 
 
-If it is a human sample, we require formal consent, questionnaire results and sample details (type, date, and time of collection). If it is a pet or environmental sample we require sample details (type, date and time of collection). If you have already filled out the consent form and questionnaire, then it is likely that the sample simply needs to be associated with the appropriate participant.
+    The most common reason for receiving this email is the sample was not logged. Logging the sample associates the sample with a participant in our records.
+    This needs to be done so the we know that the sample has consent before we can process it. 
 
-In order to help you in adding these details, the side of the sample tube {barcode} reads:
-   sample date: {sample_date} 
-   sample time: {sample_time}
+    If it is a human sample, we require formal consent, questionnaire results and sample details (type, date, and time of collection). 
+    If it is a pet or environmental sample we require sample details (type, date and time of collection). If you have already filled out the 
+    consent form and questionnaire, then it is likely that the sample simply needs to be associated with the appropriate participant.
 
-Instructions about the required procedures can be found here: http://www.microbio.me/americangut/img/full_instructions.pdf
+    In order to help you in adding these details, the side of the sample tube {barcode} reads:
+       sample date: {sample_date} 
+       sample time: {sample_time}
 
-These procedures are in place to protect your privacy, and please be sure that we are properly associating your sample to your survey results. We realize that some of these steps may not be completely intuitive. However, our kits are designed to support multiple participants and sample types, which necessitates the added complexity of explicitly requiring participants to associate samples with themselves so that we can guarantee compliance with human subjects research protocols.
+    Instructions about the required procedures can be found here: http://www.microbio.me/americangut/img/full_instructions.pdf
 
-Please log back into the American Gut website (http://www.microbio.me/americangut) as soon as possible and complete the online process. If you have any questions or concerns, please contact us at info@americangut.org.
+    These procedures are in place to protect your privacy, and please be sure that we are properly associating your sample to your 
+    survey results. We realize that some of these steps may not be completely intuitive. However, our kits are designed to support 
+    multiple participants and sample types, which necessitates the added complexity of explicitly requiring participants to associate 
+    samples with themselves so that we can guarantee compliance with human subjects research protocols.
 
-Thank you,
+    Please log back into the American Gut website (http://www.microbio.me/americangut) as soon as possible and complete the online process. 
+    If you have any questions or concerns, please contact us at info@americangut.org.
 
---American Gut Team--
-'''
+    Thank you,
 
-                body_message = body_message.format(name=login_user, barcode=prev_barcode,
-                                                   sample_date=sample_date,
-                                                   sample_time=sample_time)
-            elif email_type == '1':
-                subject = 'American Gut Sample with Barcode %s is Received.' % prev_barcode
-                body_message = '''
-Dear {name},
+    --American Gut Team--
+    '''
 
-We have recently received your sample with barcode {barcode} dated {sample_date} {sample_time} and we have begun processing it.  Please see our FAQ section for when you can expect results. (http://www.microbio.me/americangut/FAQ.psp#faq4)
+                    body_message = body_message.format(name=login_user, barcode=prev_barcode,
+                                                       sample_date=sample_date,
+                                                       sample_time=sample_time)
+                elif email_type == '1':
+                    subject = 'American Gut Sample with Barcode %s is Received.' % prev_barcode
+                    body_message = '''
+    Dear {name},
 
-Thank you for your participation!
+    We have recently received your sample with barcode {barcode} dated {sample_date} {sample_time} and we have begun processing it.  
+    Please see our FAQ section for when you can expect results. (http://www.microbio.me/americangut/FAQ.psp#faq4)
 
---American Gut Team--
-'''
-                body_message = body_message.format(name=login_user, barcode=prev_barcode,
-                                                   sample_date=sample_date, sample_time=sample_time)
+    Thank you for your participation!
 
-            
+    --American Gut Team--
+    '''
+                    body_message = body_message.format(name=login_user, barcode=prev_barcode,
+                                                       sample_date=sample_date, sample_time=sample_time)
 
-            login_email = form['login_email']
+                
 
- 
-            if login_email != "None":
-                try:
-                    send_email(body_message, subject, login_email)
-                    sent_date = current_date
-                    req.write("Sent email successfully to kit owner %s<br/>" % login_email)
-                except:
-                    req.write("Email sending to (%s) failed failed (barcode: %s)!!!<br/>" % (login_email, prev_barcode))
-    
-        sample_issue = form.get('sample_issue', [])
-        moldy = overloaded = other = 'N'
-        if 'moldy' in sample_issue: moldy = 'Y'
-        if 'overloaded' in sample_issue: overloaded = 'Y'
-        if 'other' in sample_issue: other = 'Y'
-        ag_data_access.updateAKB(prev_barcode, moldy, overloaded, other,
-                                 form['other_text'], sent_date)
-        req.write("Barcode %s was sucessfully updated<br/>" % prev_barcode)
-    # except:
-    #     req.write("Barcode %s update failed!!!<br/>" % prev_barcode)
+                login_email = form['login_email']
+
+     
+                if login_email != "None":
+                    try:
+                        send_email(body_message, subject, login_email)
+                        sent_date = current_date
+                        req.write("Sent email successfully to kit owner %s<br/>" % login_email)
+                    except:
+                        req.write("Email sending to (%s) failed failed (barcode: %s)!!!<br/>" % (login_email, prev_barcode))
+        
+            sample_issue = form.get('sample_issue', [])
+            moldy = overloaded = other = 'N'
+            if 'moldy' in sample_issue: moldy = 'Y'
+            if 'overloaded' in sample_issue: overloaded = 'Y'
+            if 'other' in sample_issue: other = 'Y'
+            try:
+                ag_data_access.updateAKB(prev_barcode, moldy, overloaded, other,
+                                     form['other_text'], sent_date)
+                req.write("Barcode %s American Gut Info was sucessfully updated<br/>" % prev_barcode)
+            except:
+                req.write("Barcode %s American Gut Info update failed!!!<br/>" % prev_barcode)
 # de-indent
 %>
 
@@ -125,6 +141,7 @@ try:
     barcodeinfo = ag_data_access.checkBarcode(barcode)
     barcode_metadata = ag_data_access.AGGetBarcodeMetadata(barcode)
     proj_type = data_access.getBarcodeProjType(barcode)
+    proj_group = data_access.getProjectGroup(proj_type)
     if len(barcodeinfo)==0:
         req.write('''
          <div id="invalid_barcode" class="verification_color">
@@ -212,6 +229,7 @@ try:
           <input type="hidden" name="sample_date" id="sample_date" value="<%=sample_date%>"/>
           <input type="hidden" name="sample_time" id="sample_time" value="<%=sample_time%>"/>
           <input type="hidden" name="sample_site" id="sample_site" value="<%=sample_site%>"/>
+          <input type="hidden" name="proj_group" id="proj_group" value="<%=proj_group%>"/>
           <ul>
           <table cellspacing="40"><tr><td>
           <h2> General Barcode Details </h2>
@@ -310,7 +328,11 @@ try:
 %>
             </select>
             </li></td><td>
-            <h2><%=proj_type%> details</h2>
+<%
+        if proj_group== 'American Gut':
+            #Indent
+%>
+            <h2><%=proj_type%> Details</h2>
              <li>
              Sample details: <br/>
              <table>
@@ -335,13 +357,14 @@ try:
             
              <li>
                Send an email notification (previously sent: <%=date_of_last_email%>): <br />
+
                <table><tr>
                   <td> <input class="checkbox" type="checkbox" name="send_email" id="send_email" value="send_email" style="float:left;" /> </td>
                   <td><label for="send_email" style="display:block;">send kit owner <%=name%> (<%=email%>) an email </label> </td></tr>
 
 <%
-        if email_type == '0':
-            # indent
+            if email_type == '0':
+                # indent
 %>
             <tr><td></td><td>
             sample date: <input type="text" name="sample_date" id="sample_date" style="width:100px"/> <br/>
@@ -372,21 +395,24 @@ try:
                   </script>
             </td></tr>
 <%
-        elif email_type == '1':
-            # indent
+            elif email_type == '1':
+                # indent
 %>
             <input type="hidden" name="sample_time" value="<%=sample_time%>" />
             <input type="hidden" name="sample_date" value="<%=sample_date%>" />
 <%
-        # de-indent
+            # de-indent
 %>
             </table>
            </li>
            <li>
-        <a href="fusebox.psp?page=ag_edit_barcode.psp&barcode=<%=barcode%>">Edit American Gut Barcode</a>
+            <a href="fusebox.psp?page=ag_edit_barcode.psp&barcode=<%=barcode%>">Edit American Gut Barcode</a>
            </li>
           </ul>
-          </tr></td></table><br /><br />
+<%
+        #End Indent
+%>
+          </td></tr></table><br /><br />
               <input type="submit" value="Submit">
               <input type="reset" value="Reset!">
         </form>

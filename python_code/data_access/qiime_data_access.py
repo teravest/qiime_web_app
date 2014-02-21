@@ -3016,3 +3016,17 @@ class QiimeDataAccess(object):
         con.cursor().callproc('get_barcode_statuses', [result])
         bar_statuses = [row[0] for row in result]
         return bar_statuses
+
+    def getProjectGroup(self, project_name):
+        """Returns a project group name
+
+        project_name is the name of the project
+        """
+        con = self.getMetadataDatabaseConnection()
+        result = con.cursor()
+        con.cursor().callproc('get_project_group', [project_name,result])
+        group = result.fetchone()
+        if group:
+            return group[0]
+        else:
+            return None
