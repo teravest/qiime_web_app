@@ -154,21 +154,29 @@ class AGDataAccess(object):
         results = con.cursor()
         con.cursor().callproc('ag_get_barcode_details', [barcode, results])
         barcode_details = results.fetchone()
-        row_dict = {
-            'email': barcode_details[0],
-            'ag_kit_barcode_id': barcode_details[1],
-            'ag_kit_id': barcode_details[2],
-            'barcode': barcode_details[3],
-            'site_sampled': barcode_details[4],
-            'environment_sampled': barcode_details[5],
-            'sample_date': barcode_details[6],
-            'sample_time': barcode_details[7],
-            'participant_name': barcode_details[8],
-            'notes': barcode_details[9],
-            'refunded' : barcode_details[10],
-            'withdrawn' : barcode_details[11]
-        }
-
+        try:
+            row_dict = {
+                'email': barcode_details[0],
+                'ag_kit_barcode_id': barcode_details[1],
+                'ag_kit_id': barcode_details[2],
+                'barcode': barcode_details[3],
+                'site_sampled': barcode_details[4],
+                'environment_sampled': barcode_details[5],
+                'sample_date': barcode_details[6],
+                'sample_time': barcode_details[7],
+                'participant_name': barcode_details[8],
+                'notes': barcode_details[9],
+                'refunded' : barcode_details[10],
+                'withdrawn' : barcode_details[11],
+                'moldy' : barcode_details[12],
+                'other' : barcode_details[13],
+                'other_text' : barcode_details[14],
+                'date_of_last_email' : barcode_details[15],
+                'overloaded' : barcode_details[16],
+                'kit_name' : barcode_details[17]
+            }
+        except TypeError:
+            row_dict = {}
         return row_dict
 
     def getAGKitDetails(self, supplied_kit_id):
