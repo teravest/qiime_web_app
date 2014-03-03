@@ -134,320 +134,317 @@ if prev_barcode:
 </form>
 </div>
 <%
-try:
-    barcode = form['barcode']
-except(KeyError):
-    pass
-    #will get here on first load of this page since there should be no barcode key in the form dict
+if 'barcode' in form:
+  barcode = form['barcode']
 
-barcode_details = data_access.getBarcodeDetails(barcode)
-proj_type = data_access.getBarcodeProjType(barcode)
-proj_group = data_access.getProjectGroup(proj_type)
+  barcode_details = data_access.getBarcodeDetails(barcode)
+  proj_type = data_access.getBarcodeProjType(barcode)
+  proj_group = data_access.getProjectGroup(proj_type)
 
-if len(barcode_details)==0:
-    req.write('''
-     <div id="invalid_barcode" class="verification_color">
-        <div class="verification_text_wrapper">
-           <br />
-             <h2 class="verification_text">Barcode <br>
-             "%s"
-             <br> does not exist in the database!</h2>
-         </div>
-     </div>
-    ''' % barcode)
-else: 
-    #barcode exists get general info 
-    status = 'Received' if barcode_details['status'] == None \
-            else barcode_details['status']
-    scan_date = 'NA' if barcode_details['scan_date'] == None \
-            else barcode_details['scan_date']
-    sample_postmark_date = 'NA' if barcode_details['sample_postmark_date'] \
-            == None else barcode_details['sample_postmark_date']
-    
-    biomass_remaining = 'Unknown' if barcode_details['biomass_remaining'] \
-            == None else barcode_details['biomass_remaining']
-    sequencing_status = '' if barcode_details['sequencing_status'] \
-            == None else barcode_details['sequencing_status']
-    obsolete = 'N' if barcode_details['obsolete'] == None \
-            else barcode_details['obsolete']
-    div_id = message = email_type = ""
+  if len(barcode_details)==0:
+      req.write('''
+       <div id="invalid_barcode" class="verification_color">
+          <div class="verification_text_wrapper">
+             <br />
+               <h2 class="verification_text">Barcode <br>
+               "%s"
+               <br> does not exist in the database!</h2>
+           </div>
+       </div>
+      ''' % barcode)
+  else: 
+      #barcode exists get general info 
+      status = 'Received' if barcode_details['status'] == None \
+              else barcode_details['status']
+      scan_date = 'NA' if barcode_details['scan_date'] == None \
+              else barcode_details['scan_date']
+      sample_postmark_date = 'NA' if barcode_details['sample_postmark_date'] \
+              == None else barcode_details['sample_postmark_date']
+      
+      biomass_remaining = 'Unknown' if barcode_details['biomass_remaining'] \
+              == None else barcode_details['biomass_remaining']
+      sequencing_status = '' if barcode_details['sequencing_status'] \
+              == None else barcode_details['sequencing_status']
+      obsolete = 'N' if barcode_details['obsolete'] == None \
+              else barcode_details['obsolete']
+      div_id = message = email_type = ""
 
-    if (obsolete == "Y"):
-            #the barcode is obsolete
-            div_id = "obsolete"
-            message = "Barcode is Obsolete"
-    #get project info for div 
-    elif proj_group == 'American Gut':
-        ag_details = ag_data_access.getAGBarcodeDetails(barcode)
-        if len(ag_details) > 0:
-            sample_site = '' if ag_details['site_sampled'] == None \
-                        else ag_details['site_sampled']
-            sample_date = '' if ag_details['sample_date'] == None else \
-                        ag_details['sample_date']
-            sample_time = '' if ag_details['sample_time'] == None else \
-                        ag_details['sample_time']
-            moldy = 'NA' if ag_details['moldy'] == None else ag_details['moldy']
-            overloaded = 'NA' if ag_details['overloaded'] == None else \
-                        ag_details['overloaded']
-            other = 'NA' if ag_details['other'] == None else ag_details['other']
-            other_text = '' if ag_details['other_text'] == None else \
-                        ag_details['other_text']
-            date_of_last_email = '' if ag_details['date_of_last_email'] == None \
-                        else ag_details['date_of_last_email']
-            email = '' if ag_details['email'] == None else ag_details['email']
-            name = '' if ag_details['kit_name'] == None else ag_details['kit_name']
-            moldy_checked = "checked" if moldy in ('Y','y') else ""
-            overloaded_checked = "checked" if overloaded in ('Y','y') else ""
-            other_checked = "checked" if other in ('Y','y') else ""
-            barcode_metadata = ag_data_access.AGGetBarcodeMetadata(barcode)
-            if not (sample_date == sample_site == sample_time == ''):
-                # it has all sample details (sample time, date, site)
-                if len(barcode_metadata) == 1:
-                    # and we can successfully retrieve sample metadata
-                    div_id = "verified"
-                    message = "All good"
-                    email_type = "1"
-                elif len(barcode_metadata) == 0:
-                    # we cannot retrieve metadata
-                    div_id = "no_metadata"
-                    message = "Cannot retrieve metadata"
-                else:
-                    # should never get here (this would happen if the metadata
-                    # pulldown returned more than one row for a single barcode)
-                    div_id = "md_pulldown_error"
-                    message = ("This barcode has multiple entries in the "
-                               "database, which should never happeen. Please "
-                               "notify someone on the database crew.")
-            else:
-                div_id = "not_assigned"
-                message = "Missing info"
-                email_type = "0"
-        else:
-            div_id = "not_assigned"
-            message = ("In American Gut project group but No " 
-                       "Amerincan Gut info for barcode")
-    else:
-        div_id = "verified"
-        message = "Barcode Info is correct"
-    #INDENT
-    #Below this point is general barcode code. 
+      if (obsolete == "Y"):
+              #the barcode is obsolete
+              div_id = "obsolete"
+              message = "Barcode is Obsolete"
+      #get project info for div 
+      elif proj_group == 'American Gut':
+          ag_details = ag_data_access.getAGBarcodeDetails(barcode)
+          if len(ag_details) > 0:
+              sample_site = '' if ag_details['site_sampled'] == None \
+                          else ag_details['site_sampled']
+              sample_date = '' if ag_details['sample_date'] == None else \
+                          ag_details['sample_date']
+              sample_time = '' if ag_details['sample_time'] == None else \
+                          ag_details['sample_time']
+              moldy = 'NA' if ag_details['moldy'] == None else ag_details['moldy']
+              overloaded = 'NA' if ag_details['overloaded'] == None else \
+                          ag_details['overloaded']
+              other = 'NA' if ag_details['other'] == None else ag_details['other']
+              other_text = '' if ag_details['other_text'] == None else \
+                          ag_details['other_text']
+              date_of_last_email = '' if ag_details['date_of_last_email'] == None \
+                          else ag_details['date_of_last_email']
+              email = '' if ag_details['email'] == None else ag_details['email']
+              name = '' if ag_details['kit_name'] == None else ag_details['kit_name']
+              moldy_checked = "checked" if moldy in ('Y','y') else ""
+              overloaded_checked = "checked" if overloaded in ('Y','y') else ""
+              other_checked = "checked" if other in ('Y','y') else ""
+              barcode_metadata = ag_data_access.AGGetBarcodeMetadata(barcode)
+              if not (sample_date == sample_site == sample_time == ''):
+                  # it has all sample details (sample time, date, site)
+                  if len(barcode_metadata) == 1:
+                      # and we can successfully retrieve sample metadata
+                      div_id = "verified"
+                      message = "All good"
+                      email_type = "1"
+                  elif len(barcode_metadata) == 0:
+                      # we cannot retrieve metadata
+                      div_id = "no_metadata"
+                      message = "Cannot retrieve metadata"
+                  else:
+                      # should never get here (this would happen if the metadata
+                      # pulldown returned more than one row for a single barcode)
+                      div_id = "md_pulldown_error"
+                      message = ("This barcode has multiple entries in the "
+                                 "database, which should never happeen. Please "
+                                 "notify someone on the database crew.")
+              else:
+                  div_id = "not_assigned"
+                  message = "Missing info"
+                  email_type = "0"
+          else:
+              div_id = "not_assigned"
+              message = ("In American Gut project group but No " 
+                         "Amerincan Gut info for barcode")
+      else:
+          div_id = "verified"
+          message = "Barcode Info is correct"
+      #INDENT
+      #Below this point is general barcode code. 
 %>
-    
-    <div id="<%=div_id%>" class="verification_color">
-       <div class="verification_text_wrapper">
-          <br />
-           
-            <h2 class="verification_text">
-             Project type: <%=proj_type%> <br><br>
-             Barcode: <%=barcode%><br><br>
-            <%=message%></h2>
-        </div>
-    </div>
+      
+      <div id="<%=div_id%>" class="verification_color">
+         <div class="verification_text_wrapper">
+            <br />
+             
+              <h2 class="verification_text">
+               Project type: <%=proj_type%> <br><br>
+               Barcode: <%=barcode%><br><br>
+              <%=message%></h2>
+          </div>
+      </div>
 
-    <div id="barcode_form">
+      <div id="barcode_form">
 
-    <form action="fusebox.psp?page=barcode_util.psp" method="post"
-     onsubmit="return confirm('Are you sure to submit and update database?')"
-     onreset="return confirm('Are you sure to reset?')">
-      <input type="hidden" name="prev_barcode" value="<%=barcode%>" />
-      <input type="hidden" name="proj_group" id="proj_group" value="<%=proj_group%>"/>
-      <ul>
-      <table cellspacing="40"><tr><td>
-      <h2> General Barcode Details </h2>
-        <li>
-           Sample postmark date (current: <%=sample_postmark_date%>) : <br />
-              <input type="text" name="postmark_date" id="postmark_date" value="<%=sample_postmark_date if sample_postmark_date != 'NA' else ''%>" onclick="this.select()" /> <br />
-                    <script>
-                      $(function() {
-                        $( "#postmark_date" ).datepicker({
-                                changeMonth: true,
-                                maxDate: '+0m',
-                                onSelect: function(dateText, inst) {
-                                    $(this).focus();
-                                }
+      <form action="fusebox.psp?page=barcode_util.psp" method="post"
+       onsubmit="return confirm('Are you sure to submit and update database?')"
+       onreset="return confirm('Are you sure to reset?')">
+        <input type="hidden" name="prev_barcode" value="<%=barcode%>" />
+        <input type="hidden" name="proj_group" id="proj_group" value="<%=proj_group%>"/>
+        <ul>
+        <table cellspacing="40"><tr><td>
+        <h2> General Barcode Details </h2>
+          <li>
+             Sample postmark date (current: <%=sample_postmark_date%>) : <br />
+                <input type="text" name="postmark_date" id="postmark_date" value="<%=sample_postmark_date if sample_postmark_date != 'NA' else ''%>" onclick="this.select()" /> <br />
+                      <script>
+                        $(function() {
+                          $( "#postmark_date" ).datepicker({
+                                  changeMonth: true,
+                                  maxDate: '+0m',
+                                  onSelect: function(dateText, inst) {
+                                      $(this).focus();
+                                  }
+                          });
                         });
-                      });
-                    </script>
-              (please follow the format mm/dd/yyyy. Example: 12/25/2012)
-         </li>
-         <li>
-           Scan date (current: <%=scan_date%>): <br />
-           <input type="text" name="scan_date" id="scan_date" value="<%=scan_date if scan_date != 'NA' else ''%>" onclick="this.select()" /> <br />
-                    <script>
-                      $(function() {
-                        $( "#scan_date" ).datepicker({
-                                changeMonth: true,
-                                maxDate: '+0m',
-                                onSelect: function(dateText, inst) {
-                                    $(this).focus();
-                                }
+                      </script>
+                (please follow the format mm/dd/yyyy. Example: 12/25/2012)
+           </li>
+           <li>
+             Scan date (current: <%=scan_date%>): <br />
+             <input type="text" name="scan_date" id="scan_date" value="<%=scan_date if scan_date != 'NA' else ''%>" onclick="this.select()" /> <br />
+                      <script>
+                        $(function() {
+                          $( "#scan_date" ).datepicker({
+                                  changeMonth: true,
+                                  maxDate: '+0m',
+                                  onSelect: function(dateText, inst) {
+                                      $(this).focus();
+                                  }
+                          });
                         });
-                      });
-                    </script>
-              (please follow the format mm/dd/yyyy. Example: 12/25/2012)
-         </li>
-         <li>
-         Barcode Status:<br /><select name="bstatus" id="bstatus">
+                      </script>
+                (please follow the format mm/dd/yyyy. Example: 12/25/2012)
+           </li>
+           <li>
+           Barcode Status:<br /><select name="bstatus" id="bstatus">
 <%
-    bar_statuses = data_access.getBarcodeStatuses()
-    for bstatus in bar_statuses:
-        if bstatus == status:
-            req.write('<option value="{0}" selected>{0}</option>'.format(bstatus))
-        else:
-            req.write('<option value="{0}">{0}</option>'.format(bstatus))
-    #END Indent
+      bar_statuses = data_access.getBarcodeStatuses()
+      for bstatus in bar_statuses:
+          if bstatus == status:
+              req.write('<option value="{0}" selected>{0}</option>'.format(bstatus))
+          else:
+              req.write('<option value="{0}">{0}</option>'.format(bstatus))
+      #END Indent
 %>
 
-         </select></li>
-         <li>Biomass Remaining: <br /><select name="biomass_remaining" id="biomass_remaining">
+           </select></li>
+           <li>Biomass Remaining: <br /><select name="biomass_remaining" id="biomass_remaining">
 <%
-    for bmass in ['N', 'Y', 'Unknown']:
-        selected = ''
-        if biomass_remaining == bmass:
-            selected = 'selected'
-        if bmass == 'Y':
-            req.write("<option value='Y' {0}>Yes</option>".format(selected))
-        elif bmass == 'N':
-            req.write("<option value='N' {0}>No</option>".format(selected))
-        elif bmass == 'Unknown':
-            req.write("<option value='' {0}>Unknown</option>".format(selected))
-    #END Indent
+      for bmass in ['N', 'Y', 'Unknown']:
+          selected = ''
+          if biomass_remaining == bmass:
+              selected = 'selected'
+          if bmass == 'Y':
+              req.write("<option value='Y' {0}>Yes</option>".format(selected))
+          elif bmass == 'N':
+              req.write("<option value='N' {0}>No</option>".format(selected))
+          elif bmass == 'Unknown':
+              req.write("<option value='' {0}>Unknown</option>".format(selected))
+      #END Indent
 %>
-         </select></li>
-         <li>Sequencing Status<br /><select name="sequencing_status" id="sequencing_status">
+           </select></li>
+           <li>Sequencing Status<br /><select name="sequencing_status" id="sequencing_status">
 <%
-    seq_statuses = data_access.getSequencingStatuses()
-    for sstatus in seq_statuses:
-        if sequencing_status == sstatus:
-            req.write('<option value="{0}" selected>{0}</option>'.format(sstatus))
-        else:
-            req.write('<option value="{0}">{0}</option>'.format(sstatus))
-    if sequencing_status == '':
-        req.write('<option value="" selected>Unknown</option>')
-    else: 
-        req.write('<option value="">Unknown</option>')
-    #END Indent
+      seq_statuses = data_access.getSequencingStatuses()
+      for sstatus in seq_statuses:
+          if sequencing_status == sstatus:
+              req.write('<option value="{0}" selected>{0}</option>'.format(sstatus))
+          else:
+              req.write('<option value="{0}">{0}</option>'.format(sstatus))
+      if sequencing_status == '':
+          req.write('<option value="" selected>Unknown</option>')
+      else: 
+          req.write('<option value="">Unknown</option>')
+      #END Indent
 %>
-    </select></li>
-         <li>Obsolete<br /><select name="obsolete_status" id="obsolete_status">
+      </select></li>
+           <li>Obsolete<br /><select name="obsolete_status" id="obsolete_status">
 <%
-    if obsolete == 'N':
-      req.write('<option value="N" selected>No</option>')
-      req.write('<option value="Y">Yes</option>')
-    else:
-      req.write('<option value="N">No</option>')
-      req.write('<option value="Y" selected>Yes</option>')
-    #END Indent
+      if obsolete == 'N':
+        req.write('<option value="N" selected>No</option>')
+        req.write('<option value="Y">Yes</option>')
+      else:
+        req.write('<option value="N">No</option>')
+        req.write('<option value="Y" selected>Yes</option>')
+      #END Indent
 %>
-         </select></li>
-         <li>
-         Project <br /><select name="project" id="project" >
+           </select></li>
+           <li>
+           Project <br /><select name="project" id="project" >
 <%
-    project_names = data_access.getProjectNames()
-    for project in project_names:
-        if project == proj_type:
-            req.write('<option value="{0}" selected>{0}</option>'.format(project))
-        else:
-            req.write('<option value="{0}">{0}</option>'.format(project))
-    #End Indent
+      project_names = data_access.getProjectNames()
+      for project in project_names:
+          if project == proj_type:
+              req.write('<option value="{0}" selected>{0}</option>'.format(project))
+          else:
+              req.write('<option value="{0}">{0}</option>'.format(project))
+      #End Indent
 %>
-    </select>
-    </li></td><td>
+      </select>
+      </li></td><td>
 <%
-    if proj_group== 'American Gut' and len(ag_details) > 0:
-        #Displaying project specific information
-        #Indent
+      if proj_group== 'American Gut' and len(ag_details) > 0:
+          #Displaying project specific information
+          #Indent
 %>
-      <input type="hidden" name="sent_date" value="<%=date_of_last_email%>" />
-      <input type="hidden" name="login_user"  value="<%=name%>" />
-      <input type="hidden" name="login_email" value="<%=email%>" />
-      <input type="hidden" name="email_type" value="<%=email_type%>" />
-      <input type="hidden" name="sample_date" id="sample_date" value="<%=sample_date%>"/>
-      <input type="hidden" name="sample_time" id="sample_time" value="<%=sample_time%>"/>
-      <input type="hidden" name="sample_site" id="sample_site" value="<%=sample_site%>"/>
-        <h2><%=proj_type%> Details</h2>
-         <li>
-         Sample details: <br/>
-         <table>
-         <tr><td>Sample Date</td><td><%=sample_date%></td></tr>
-         <tr><td>Sample Time</td><td><%=sample_time%></td></tr>
-         <tr><td>Sample Site</td><td><%=sample_site%></td></tr>
-         </table>
-         </li>
-         <li>
-           Sample issues: <br />
-              <input class="checkbox" type="checkbox" name="sample_issue" id="moldy" value="moldy" <%=moldy_checked%>/> 
-                <label for="moldy"> moldy (current: <%=moldy%>) </label> <br />
-              <input class="checkbox" type="checkbox" name="sample_issue" id="overloaded" value="overloaded" <%=overloaded_checked%>/>
-                <label for="overloaded"> overloaded (current: <%=overloaded%>) </label> <br />
-              <input class="checkbox" type="checkbox" name="sample_issue" id="other" value="other" <%=other_checked%>/>
-                <label for="other"> other (current: <%=other%>) </label> <br />
-         </li>
-         <li>
-           Other notes: <br />
-              <textarea name="other_text" onclick="this.select()"><%=other_text%></textarea>
-         </li>
-        
-         <li>
-           Send an email notification (previously sent: <%=date_of_last_email%>): <br />
+        <input type="hidden" name="sent_date" value="<%=date_of_last_email%>" />
+        <input type="hidden" name="login_user"  value="<%=name%>" />
+        <input type="hidden" name="login_email" value="<%=email%>" />
+        <input type="hidden" name="email_type" value="<%=email_type%>" />
+        <input type="hidden" name="sample_date" id="sample_date" value="<%=sample_date%>"/>
+        <input type="hidden" name="sample_time" id="sample_time" value="<%=sample_time%>"/>
+        <input type="hidden" name="sample_site" id="sample_site" value="<%=sample_site%>"/>
+          <h2><%=proj_type%> Details</h2>
+           <li>
+           Sample details: <br/>
+           <table>
+           <tr><td>Sample Date</td><td><%=sample_date%></td></tr>
+           <tr><td>Sample Time</td><td><%=sample_time%></td></tr>
+           <tr><td>Sample Site</td><td><%=sample_site%></td></tr>
+           </table>
+           </li>
+           <li>
+             Sample issues: <br />
+                <input class="checkbox" type="checkbox" name="sample_issue" id="moldy" value="moldy" <%=moldy_checked%>/> 
+                  <label for="moldy"> moldy (current: <%=moldy%>) </label> <br />
+                <input class="checkbox" type="checkbox" name="sample_issue" id="overloaded" value="overloaded" <%=overloaded_checked%>/>
+                  <label for="overloaded"> overloaded (current: <%=overloaded%>) </label> <br />
+                <input class="checkbox" type="checkbox" name="sample_issue" id="other" value="other" <%=other_checked%>/>
+                  <label for="other"> other (current: <%=other%>) </label> <br />
+           </li>
+           <li>
+             Other notes: <br />
+                <textarea name="other_text" onclick="this.select()"><%=other_text%></textarea>
+           </li>
+          
+           <li>
+             Send an email notification (previously sent: <%=date_of_last_email%>): <br />
 
-           <table><tr>
-              <td> <input class="checkbox" type="checkbox" name="send_email" id="send_email" value="send_email" style="float:left;" /> </td>
-              <td><label for="send_email" style="display:block;">send kit owner <%=name%> (<%=email%>) an email </label> </td></tr>
+             <table><tr>
+                <td> <input class="checkbox" type="checkbox" name="send_email" id="send_email" value="send_email" style="float:left;" /> </td>
+                <td><label for="send_email" style="display:block;">send kit owner <%=name%> (<%=email%>) an email </label> </td></tr>
 
 <%
-        if email_type == '0':
-            # indent
+          if email_type == '0':
+              # indent
 %>
-        <tr><td></td><td>
-        sample date: <input type="text" name="sample_date" id="sample_date" style="width:100px"/> <br/>
-                    <script>
-                      $(function() {
-                        $( "#sample_date" ).datepicker({
-                                changeMonth: true,
-                                maxDate: '+0m',
-                                onSelect: function(dateText, inst) {
-                                    $(this).focus();
-                                }
+          <tr><td></td><td>
+          sample date: <input type="text" name="sample_date" id="sample_date" style="width:100px"/> <br/>
+                      <script>
+                        $(function() {
+                          $( "#sample_date" ).datepicker({
+                                  changeMonth: true,
+                                  maxDate: '+0m',
+                                  onSelect: function(dateText, inst) {
+                                      $(this).focus();
+                                  }
+                          });
                         });
+                      </script>
+          </td></tr>
+          <tr><td></td><td>
+          sample time: <input type="text" name="sample_time" id="sample_time" style="width:100px"/> <br />
+                <script>
+                    $(function() {
+                      $( "#sample_time" ).timepicker({
+                         showPeriod: true,
+                         showLeadingZero: true,
+                         onSelect: function(dateText, inst) {
+                            $(this).focus();
+                         }
                       });
-                    </script>
-        </td></tr>
-        <tr><td></td><td>
-        sample time: <input type="text" name="sample_time" id="sample_time" style="width:100px"/> <br />
-              <script>
-                  $(function() {
-                    $( "#sample_time" ).timepicker({
-                       showPeriod: true,
-                       showLeadingZero: true,
-                       onSelect: function(dateText, inst) {
-                          $(this).focus();
-                       }
                     });
-                  });
-              </script>
-        </td></tr>
+                </script>
+          </td></tr>
 <%
-        elif email_type == '1':
-            # indent
+          elif email_type == '1':
+              # indent
 %>
-        <input type="hidden" name="sample_time" value="<%=sample_time%>" />
-        <input type="hidden" name="sample_date" value="<%=sample_date%>" />
+          <input type="hidden" name="sample_time" value="<%=sample_time%>" />
+          <input type="hidden" name="sample_date" value="<%=sample_date%>" />
 <%
-        # de-indent
+          # de-indent
 %>
-        </table>
-       </li>
-       <li>
-        <a href="fusebox.psp?page=ag_edit_barcode.psp&barcode=<%=barcode%>">Edit American Gut Barcode</a>
-       </li>
-      </ul>
+          </table>
+         </li>
+         <li>
+          <a href="fusebox.psp?page=ag_edit_barcode.psp&barcode=<%=barcode%>">Edit American Gut Barcode</a>
+         </li>
+        </ul>
 <%
-    #End Indent
-    #below here is barcode general 
+      #End Indent
+      #below here is barcode general 
 %>
-      </td></tr></table><br /><br />
-          <input type="submit" value="Submit">
-          <input type="reset" value="Reset!">
-    </form>
-    </div>
+        </td></tr></table><br /><br />
+            <input type="submit" value="Submit">
+            <input type="reset" value="Reset!">
+      </form>
+      </div>
