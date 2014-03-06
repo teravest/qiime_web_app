@@ -2962,11 +2962,14 @@ class QiimeDataAccess(object):
             print 'Exception caught: %s.\nThe error is: %s' % (type(e), e)
             return False  
 
-    def updateBarcodeStatus(self, status, postmark, scan_date, barcode, biomass_remaining, sequencing_status, obsolete):
+    def updateBarcodeStatus(self, status, postmark, scan_date, barcode, 
+                            biomass_remaining, sequencing_status, obsolete):
         """ Updates a barcode's status
         """
         con = self.getMetadataDatabaseConnection()
-        con.cursor().callproc('update_barcode_status', [status, postmark, scan_date, barcode, biomass_remaining, sequencing_status, obsolete])
+        con.cursor().callproc('update_barcode_status', [status, postmark, 
+                               scan_date, barcode, biomass_remaining, 
+                               sequencing_status, obsolete])
 
     def getBarcodeProjType(self, barcode):
         """ Get the project type of the barcode.
@@ -3020,7 +3023,7 @@ class QiimeDataAccess(object):
     def getProjectGroup(self, project_name):
         """Returns a project group name
 
-        project_name is the name of the project
+        project_name is the name of the project from the table project
         """
         con = self.getMetadataDatabaseConnection()
         result = con.cursor()

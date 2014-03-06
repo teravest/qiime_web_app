@@ -28,7 +28,8 @@ if 'submit_flag' in form:
   });
 </script>
 -->
-
+<!-- This from is called ag_edit_barcode1 to avoid naming conflists with 
+     the forms in header.psp -->
 <form method="post" name="ag_edit_barcode1" id="ag_edit_barcode1" action="fusebox.psp?page=ag_edit_barcode.psp">
 	<input type="hidden" name="submit_flag" id="submit_flag" value="0"/>
 	<table>
