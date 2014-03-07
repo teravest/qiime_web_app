@@ -7,7 +7,6 @@ begin
 open group_name_ for
 select g.group_name from project_groups g inner join project p on g.group_id = p.group_id 
 where p.project = project_name;
-  null;
 end get_project_group;
 
 

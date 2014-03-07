@@ -154,7 +154,7 @@ class AGDataAccess(object):
         results = con.cursor()
         con.cursor().callproc('ag_get_barcode_details', [barcode, results])
         barcode_details = results.fetchone()
-        try:
+        if barcode_details is not None:
             row_dict = {
                 'email': barcode_details[0],
                 'ag_kit_barcode_id': barcode_details[1],
@@ -175,7 +175,8 @@ class AGDataAccess(object):
                 'overloaded' : barcode_details[16],
                 'kit_name' : barcode_details[17]
             }
-        except TypeError:
+        else:
+            #no results so return an empty dict 
             row_dict = {}
         return row_dict
 

@@ -3041,7 +3041,7 @@ class QiimeDataAccess(object):
         results = con.cursor()
         con.cursor().callproc('get_barcode_details',[barcode, results])
         row = results.fetchone()
-        try:
+        if row is not None:
             barcode_details = {
                 'create_date' : row[0],
                 'status' : row[1],
@@ -3051,7 +3051,7 @@ class QiimeDataAccess(object):
                 'sequencing_status' : row[5],
                 'obsolete' : row[6]
                 }
-        except TypeError :
+        else:
             #no results mean barcode doesn't exist 
-            return {}
+            barcode_details = {}
         return barcode_details
