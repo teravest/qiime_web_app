@@ -252,9 +252,14 @@ class AGDataAccess(object):
         con = self.getMetadataDatabaseConnection()
         con.cursor().callproc('ag_insert_barcode', [ag_kit_id, barcode])
 
-    def updateAGBarcode(self, barcode, ag_kit_id, site_sampled, environment_sampled, sample_date, sample_time, participant_name, notes):
+    def updateAGBarcode(self, barcode, ag_kit_id, site_sampled, 
+                        environment_sampled, sample_date, sample_time, 
+                        participant_name, notes, refunded='N', withdrawn='N'):
         con = self.getMetadataDatabaseConnection()
-        con.cursor().callproc('ag_update_barcode', [barcode, ag_kit_id, site_sampled, environment_sampled, sample_date, sample_time, participant_name, notes])
+        con.cursor().callproc('ag_update_barcode', [barcode, ag_kit_id, 
+                              site_sampled, environment_sampled, sample_date, 
+                              sample_time, participant_name, notes, refunded,
+                              withdrawn])
 
     def addAGHumanParticipant(self, ag_login_id, participant_name):
         con = self.getMetadataDatabaseConnection()
