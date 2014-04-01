@@ -181,7 +181,7 @@ if form.has_key('username'):
             <tr><td>Re-Type Password:</td><td><input type="password" id="password_again" name="password_again" /></td></tr>
             <tr><td colspan="2"><input type="submit" value="Create User" /></tr>
             </table>
-            <type='portal_type' id='portal_type' value=<%portal_type%>/>
+            <input type='hidden' name='portal_type' id='portal_type' value="<%=portal_type%>"/>
         </form>
 <%
     elif available and not good_password:
@@ -197,7 +197,7 @@ if form.has_key('username'):
             <tr><td>Re-Type Password:</td><td><input type="password" id="password_again" name="password_again" /></td></tr>
             <tr><td colspan="2"><input type="submit" value="Create User" /></tr>
             </table>
-            <type='portal_type' id='portal_type' value=<%portal_type%>/>
+              <input type='hidden' name='portal_type' id='portal_type' value="<%=portal_type%>"/>
         </form>
 <%
     else:
@@ -211,7 +211,7 @@ if form.has_key('username'):
             <tr><td>Re-Type Password:</td><td><input type="password" id="password_again" name="password_again" /></td></tr>
             <tr><td colspan="2"><input type="submit" value="Create User" /></tr>
             </table>
-            <type='portal_type' id='portal_type' value=<%portal_type%>/>
+              <input type='hidden' name='portal_type' id='portal_type' value="<%=portal_type%>"/>
         </form>
 <%
 else:
@@ -224,7 +224,7 @@ else:
         <tr><td>Re-Type Password:</td><td><input type="password" id="password_again" name="password_again" /></td></tr>
         <tr><td colspan="2"><input type="submit" value="Create User" /></tr>
         </table>
-        <type='portal_type' id='portal_type' value=<%portal_type%>/>
+          <input type='hidden' name='portal_type' id='portal_type' value="<%=portal_type%>"/>
     </form>
 <%
 #
