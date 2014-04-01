@@ -19,6 +19,7 @@ locale.setlocale(locale.LC_ALL, 'en_US')
 data_access = data_access_factory(ServerConfig.data_access_type)
 sess = Session.Session(req)
 sess['portal_type'] = 'emp'
+sess['stylesheet'] = 'style/emp.css'
 sess.save()
 
 # Get the general statistics
@@ -136,7 +137,6 @@ plots['country'] = 'By Location'
 <title>Earth Microbiome Project - Metadata Portal</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 
-<link rel="stylesheet" href="/qiime/style/style.css" type="text/css">
 <link rel="stylesheet" href="/qiime/style/emp.css" type="text/css">
 <link class="include" rel="stylesheet" type="text/css" href="/qiime/js/jqChartJQueryPlugin_3_0_0_0/css/jquery.jqChart.css" />
 

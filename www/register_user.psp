@@ -24,8 +24,11 @@ from send_mail_from_server import process_and_send_email
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <%
+portal_type = 'qiime'
 if 'portal_type' in form:
-    req.write('<title>EMP</title>')
+    portal_type = form['portal_type']
+if portal_type == 'emp':
+    req.write('<title>Earth Mircrobiome Project</title>')
 else:
     req.write('<title>Qiime</title>')
 #END INDENT
@@ -33,7 +36,7 @@ else:
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon" />
 <%
-if 'portal_type' in form:
+if portal_type == 'emp':
     req.write('<link rel="stylesheet" href="style/emp.css" type="text/css">')
 else:
     req.write('<link rel="stylesheet" href="style/qiime.css" type="text/css">')
@@ -178,6 +181,7 @@ if form.has_key('username'):
             <tr><td>Re-Type Password:</td><td><input type="password" id="password_again" name="password_again" /></td></tr>
             <tr><td colspan="2"><input type="submit" value="Create User" /></tr>
             </table>
+            <type='portal_type' id='portal_type' value=<%portal_type%>/>
         </form>
 <%
     elif available and not good_password:
@@ -193,6 +197,7 @@ if form.has_key('username'):
             <tr><td>Re-Type Password:</td><td><input type="password" id="password_again" name="password_again" /></td></tr>
             <tr><td colspan="2"><input type="submit" value="Create User" /></tr>
             </table>
+            <type='portal_type' id='portal_type' value=<%portal_type%>/>
         </form>
 <%
     else:
@@ -206,6 +211,7 @@ if form.has_key('username'):
             <tr><td>Re-Type Password:</td><td><input type="password" id="password_again" name="password_again" /></td></tr>
             <tr><td colspan="2"><input type="submit" value="Create User" /></tr>
             </table>
+            <type='portal_type' id='portal_type' value=<%portal_type%>/>
         </form>
 <%
 else:
@@ -218,6 +224,7 @@ else:
         <tr><td>Re-Type Password:</td><td><input type="password" id="password_again" name="password_again" /></td></tr>
         <tr><td colspan="2"><input type="submit" value="Create User" /></tr>
         </table>
+        <type='portal_type' id='portal_type' value=<%portal_type%>/>
     </form>
 <%
 #
